@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function Doctors() {
   const doctors = [
-    { name: 'Dr. Sarah Jenkins', spec: 'Cardiologist', exp: '15 Years', img: 'https://placehold.co/300x400/eff6ff/1e40af?text=Dr.+Sarah+Jenkins' },
-    { name: 'Dr. Michael Chen', spec: 'Neurologist', exp: '12 Years', img: 'https://placehold.co/300x400/eff6ff/1e40af?text=Dr.+Michael+Chen' },
-    { name: 'Dr. Emily Watson', spec: 'Pediatrician', exp: '10 Years', img: 'https://placehold.co/300x400/eff6ff/1e40af?text=Dr.+Emily+Watson' },
-    { name: 'Dr. Robert Smith', spec: 'Orthopedic Surgeon', exp: '20 Years', img: 'https://placehold.co/300x400/eff6ff/1e40af?text=Dr.+Robert+Smith' },
+    { name: 'Dr. Sarah Jenkins', spec: 'Cardiologist', exp: '15 Years', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80' },
+    { name: 'Dr. Michael Chen', spec: 'Neurologist', exp: '12 Years', img: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80' },
+    { name: 'Dr. Emily Watson', spec: 'Pediatrician', exp: '10 Years', img: 'https://images.unsplash.com/photo-1594824436998-05f2260d5b63?w=400&q=80' },
+    { name: 'Dr. Robert Smith', spec: 'Orthopedic Surgeon', exp: '20 Years', img: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80' },
   ];
 
   return (

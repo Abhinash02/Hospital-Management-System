@@ -18,10 +18,10 @@ export default function Home() {
   };
 
   const practiceAreas = [
-    { title: "Neurology", img: "https://placehold.co/400x300/eff6ff/1e40af?text=Neurology", desc: "Brain & nervous system." },
-    { title: "Orthopedics", img: "https://placehold.co/400x300/eff6ff/1e40af?text=Orthopedics", desc: "Bone & joint treatments." },
-    { title: "Pediatrics", img: "https://placehold.co/400x300/eff6ff/1e40af?text=Pediatrics", desc: "Child health specialists." },
-    { title: "Oncology", img: "https://placehold.co/400x300/eff6ff/1e40af?text=Oncology", desc: "Comprehensive cancer care." }
+    { title: "Neurology", img: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=400&q=80", desc: "Brain & nervous system." },
+    { title: "Orthopedics", img: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=400&q=80", desc: "Bone & joint treatments." },
+    { title: "Pediatrics", img: "https://images.unsplash.com/photo-1632833239869-a37e3a5806d2?auto=format&fit=crop&w=400&q=80", desc: "Child health specialists." },
+    { title: "Oncology", img: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?auto=format&fit=crop&w=400&q=80", desc: "Comprehensive cancer care." }
   ];
 
   return (
@@ -31,7 +31,7 @@ export default function Home() {
         {/* Placeholder for a video or large hospital image */}
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         <img
-          src="https://placehold.co/1920x1080/1e293b/1e40af?text=Welcome+to+Medpark+Hospital"
+          src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1920&q=80"
           alt="Medpark Hospital Exterior"
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -134,8 +134,8 @@ export default function Home() {
               viewport={{ once: true }}
             >
               <div className="grid grid-cols-2 gap-4">
-                <img src="https://placehold.co/500x500/eff6ff/1e40af?text=Hospital+Interior" alt="Hospital interior" className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8" />
-                <img src="https://placehold.co/500x500/eff6ff/1e40af?text=Expert+Surgeons" alt="Surgeons" className="rounded-2xl shadow-lg w-full h-64 object-cover" />
+                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80" alt="Hospital interior" className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8" />
+                <img src="https://images.unsplash.com/photo-1538108149393-cebb60e513ce?w=800&q=80" alt="Surgeons" className="rounded-2xl shadow-lg w-full h-64 object-cover" />
               </div>
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-medical-blue text-white p-6 rounded-full shadow-2xl text-center border-4 border-white h-32 w-32 flex flex-col justify-center items-center">
                 <span className="text-3xl font-bold">20+</span>
