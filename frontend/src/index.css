@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-medical-blue: #1E40AF;
+  --color-medical-light: #DBEAFE;
+  --color-medical-dark: #1E3A8A;
+  --color-medical-white: #FFFFFF;
+  --color-medical-gray: #F3F4F6;
+}
+
+@layer base {
+  body {
+    @apply bg-medical-gray text-gray-900 antialiased;
+  }
+}

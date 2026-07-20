@@ -1,0 +1,43 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Super Admin",
+      "email": "superadmin@hospital.com",
+      "password": "123",
+      "role": "superadmin"
+    },
+    {
+      "id": "2",
+      "name": "Hospital Admin",
+      "email": "admin@hospital.com",
+      "password": "123",
+      "role": "admin",
+      "hospitalId": "h1"
+    },
+    {
+      "id": "3",
+      "name": "John Doe",
+      "email": "user@hospital.com",
+      "password": "123",
+      "role": "user"
+    }
+  ],
+  "hospitals": [
+  ],
+  "appointments": [
+    {
+      "id": "1784560394369",
+      "userId": "3",
+      "hospitalId": "h1",
+      "doctorName": "Any Available Doctor",
+      "date": "2026-07-01",
+      "time": "22:10",
+      "patientName": "Abhinash",
+      "patientPhone": "9814538354",
+      "reason": "TEST",
+      "status": "Pending",
+      "createdAt": "2026-07-20T15:13:14.369Z"
+    }
+  ]
+}
