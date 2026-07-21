@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
@@ -8,6 +8,20 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', phone: '', message: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const galleryImages = [
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=80',
+    'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=1200&q=80',
+    'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=1200&q=80'
+  ];
+  const [currentImage, setCurrentImage] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((current) => (current + 1) % galleryImages.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const validate = () => {
     const validation = {};
@@ -60,7 +74,7 @@ export default function Contact() {
     <div className="py-16 px-4 max-w-7xl mx-auto min-h-screen bg-gray-50">
       <div className="text-center mb-14">
         <p className="text-sm uppercase tracking-[0.35em] text-medical-blue font-semibold mb-3">Contact Us</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-medical-dark">Need help? Get in touch with our team.</h1>
+        <h1 className="text-3xl md:text-3xl font-extrabold text-medical-dark">Need help? Get in touch with our team.</h1>
         <p className="mt-4 text-gray-600 max-w-2xl mx-auto">Share your appointment request, feedback, or support question and we’ll respond quickly.</p>
       </div>
 
@@ -77,11 +91,13 @@ export default function Contact() {
           className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-medical-blue via-sky-500 to-indigo-600 shadow-2xl"
         >
           <motion.img
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=80"
+            key={currentImage}
+            src={galleryImages[currentImage]}
             alt="Medical team"
-            initial={{ scale: 1.05, opacity: 0.85 }}
-            animate={{ scale: [1.05, 1, 1.03, 1], opacity: [0.9, 1, 0.95, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="h-full w-full object-cover"
           />
 
@@ -119,6 +135,23 @@ export default function Contact() {
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-300 animate-pulse" />
             Live support available
           </motion.div>
+
+          <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-4 px-8 pb-8 text-white">
+            {/* <div className="w-full overflow-hidden rounded-3xl border border-white/20 bg-black/30 backdrop-blur-md">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-56 object-cover"
+                src="https://www.w3schools.com/html/mov_bbb.mp4"
+              />
+            </div> */}
+            <div className="rounded-3xl border border-white/20 bg-white/10 p-4 text-center shadow-2xl backdrop-blur-md">
+              <p className="text-sm uppercase tracking-[0.35em] text-cyan-100 font-semibold">Patient stories</p>
+              <p className="text-base font-semibold leading-snug">See our team in action, ensuring every patient gets fast and compassionate care.</p>
+            </div>
+          </div>
 
           <div className="absolute inset-y-0 left-0 flex flex-col justify-center px-8 py-10 text-white">
             <p className="text-sm uppercase tracking-[0.35em] text-cyan-200 font-semibold mb-4">Contact Support</p>

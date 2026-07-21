@@ -164,7 +164,7 @@ export default function Home() {
       {/* Practice Areas Slider Section */}
       <section className="py-20 bg-medical-light overflow-hidden">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-medical-dark">Our Practice Areas & Expertise</h2>
+          <h2 className="text-3xl md:text-3xl font-bold text-medical-dark">Our Practice Areas & Expertise</h2>
           <p className="text-gray-600 mt-3 max-w-2xl mx-auto">Comprehensive Healthcare Services under one roof. Your health, our priority.</p>
         </div>
 
@@ -209,7 +209,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-3xl md:text-4xl font-bold text-medical-dark"
+              className="text-3xl md:text-3xl font-bold text-medical-dark"
             >
               Designed by doctors for your care
             </motion.h2>
@@ -289,11 +289,11 @@ export default function Home() {
               <motion.h3 variants={fadeUp} className="text-medical-blue font-extrabold uppercase tracking-widest mb-3 text-sm">
                 About Medpark Hospital
               </motion.h3>
-              <motion.h2 variants={fadeUp} className="text-3xl md:text-5xl font-bold text-medical-dark mb-6 leading-tight">
+              <motion.h2 variants={fadeUp} className="text-3xl md:text-3xl font-bold text-medical-dark mb-6 leading-tight">
                 Dedicated to Saving Lives & Enhancing Health
               </motion.h2>
 
-              <div className="space-y-4 text-gray-700 text-lg leading-relaxed">
+              <div className="space-y-4 text-gray-700 text-sm leading-relaxed">
                 <motion.p variants={fadeUp}>
                   At <strong className="text-medical-dark">Medpark Hospital</strong>, the best hospital in Mohali, our mission is to provide exceptional,
                   patient-centered healthcare with compassion, integrity, and medical excellence.
@@ -327,10 +327,10 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-medical-light">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-15 bg-medical-light">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-5">
           <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-medical-dark">What Patients Say About Us</h2>
+            <h2 className="text-3xl md:text-3xl font-bold text-medical-dark">What Patients Say About Us</h2>
             <p className="text-gray-600 mt-3 max-w-2xl mx-auto">Trusted patient feedback from across our hospital network.</p>
           </div>
 
@@ -341,7 +341,7 @@ export default function Home() {
               transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
             >
               {marqueeTestimonials.map((item, idx) => (
-                <div key={idx} className="min-w-[280px] max-w-[320px] w-[32.666%] bg-medical-light rounded-3xl border border-gray-100 shadow-sm p-6 flex-shrink-0">
+                <div key={idx} className="min-w-[250px] max-w-[300px] w-[30.666%] bg-medical-light rounded-3xl border border-gray-100 shadow-sm p-4 flex-shrink-0">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-medical-dark">{item.name}</h3>
                     <div className="flex items-center gap-1 text-yellow-500">

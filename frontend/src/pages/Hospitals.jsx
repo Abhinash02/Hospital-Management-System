@@ -42,7 +42,7 @@ export default function Hospitals() {
           <p className="text-sm uppercase tracking-[0.4em] text-medical-blue font-semibold mb-4">
             Trusted Care Everywhere
           </p>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-medical-dark leading-tight">
+          <h1 className="text-3xl md:text-3xl font-extrabold text-medical-dark leading-tight">
             Our Hospital Network
           </h1>
           <p className="mt-5 text-gray-600 max-w-3xl mx-auto text-base md:text-lg">
@@ -108,18 +108,18 @@ export default function Hospitals() {
                   </span>
                 </div>
 
-                <p className="text-gray-700 leading-relaxed min-h-[4.5rem]">
+                <p className="text-gray-700 leading-relaxed min-h-[1.8rem]">
                   {hospital.description || 'Modern healthcare services with expert staff and compassionate support in every department.'}
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-3xl bg-medical-light p-4 text-center">
                     <p className="text-sm text-gray-500">Beds</p>
-                    <p className="mt-2 text-xl font-semibold text-medical-dark">{hospital.beds || '80+'}</p>
+                    <p className="mt-2 text-sm font-semibold text-medical-dark">{hospital.beds || '80+'}</p>
                   </div>
                   <div className="rounded-3xl bg-medical-light p-4 text-center">
                     <p className="text-sm text-gray-500">Contact</p>
-                    <p className="mt-2 text-xl font-semibold text-medical-dark">{hospital.contact || 'N/A'}</p>
+                    <p className="mt-2 text-sm font-semibold text-medical-dark">{hospital.contact || 'N/A'}</p>
                   </div>
                 </div>
 
