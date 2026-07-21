@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import DashboardLayout from '../components/DashboardLayout';
 
 export default function UserDashboard() {
   const [user, setUser] = useState(null);
@@ -86,10 +87,16 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-medical-dark mb-4">User Dashboard</h1>
-      {user && <p className="text-xl mb-8">Welcome, <span className="font-semibold text-medical-blue">{user.name}</span>!</p>}
-      
+    <DashboardLayout
+      title="User Dashboard"
+      subtitle="Book appointments, view your schedule, and stay connected with care."
+      user={user}
+    >
+      <div>
+        <h1 className="text-3xl font-bold text-medical-dark mb-4">User Dashboard</h1>
+        {user && <p className="text-xl mb-8">Welcome, <span className="font-semibold text-medical-blue">{user.name}</span>!</p>}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Book Appointment Form */}
@@ -169,6 +176,6 @@ export default function UserDashboard() {
         </div>
 
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

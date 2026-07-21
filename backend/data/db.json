@@ -13,7 +13,8 @@
       "email": "admin@hospital.com",
       "password": "123",
       "role": "admin",
-      "hospitalId": "h1"
+      "hospitalId": "h1",
+      "hospital": "Sham Nursing Home"
     },
     {
       "id": "3",
@@ -21,9 +22,55 @@
       "email": "user@hospital.com",
       "password": "123",
       "role": "user"
+    },
+    {
+      "id": "1784600280998",
+      "name": "Abhi",
+      "email": "abhi@gmail.com",
+      "password": "123",
+      "role": "admin",
+      "hospital": "Moga Medicity",
+      "hospitalId": ""
+    },
+    {
+      "id": "1784601798087",
+      "name": "Hans",
+      "email": "hans@gmail.com",
+      "password": "123",
+      "role": "user"
+    },
+    {
+      "id": "1784614682715",
+      "name": "Sham Nursing Home",
+      "email": "Sham@gmail.com",
+      "password": "123",
+      "role": "admin",
+      "hospital": "Sham Nursing Home",
+      "hospitalId": ""
     }
   ],
   "hospitals": [
+    {
+      "id": "h1",
+      "name": "Medpark Hospital Mohali",
+      "location": "Phase 8, Mohali, PB",
+      "beds": "500+",
+      "contact": "+91 98765-43210"
+    },
+    {
+      "id": "h2",
+      "name": "Medpark City Center",
+      "location": "Sector 17, Chandigarh",
+      "beds": "250+",
+      "contact": "+91 91234 56789"
+    },
+    {
+      "id": "h3",
+      "name": "Delhi Heart Moga",
+      "location": "Moga, Punjab",
+      "beds": "300+",
+      "contact": "+91 91225-56789"
+    }
   ],
   "appointments": [
     {
@@ -36,8 +83,32 @@
       "patientName": "Abhinash",
       "patientPhone": "9814538354",
       "reason": "TEST",
-      "status": "Pending",
+      "status": "Confirmed",
       "createdAt": "2026-07-20T15:13:14.369Z"
+    },
+    {
+      "id": "1784601221504",
+      "userId": "3",
+      "hospitalId": "h1",
+      "doctorName": "Any Available Doctor",
+      "date": "2026-07-21",
+      "time": "10:00",
+      "patientName": "HANS",
+      "patientPhone": "9814538354",
+      "reason": "TEST",
+      "status": "Pending",
+      "createdAt": "2026-07-21T02:33:41.504Z"
+    }
+  ],
+  "contacts": [
+    {
+      "id": "1784603308803",
+      "name": "abhi",
+      "email": "abhi@gmail.com",
+      "subject": "Want to book a appointment",
+      "phone": "9814538354",
+      "message": "Want to book a appointment.",
+      "submittedAt": "2026-07-21T03:08:28.803Z"
     }
   ]
 }

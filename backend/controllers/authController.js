@@ -66,4 +66,81 @@ const register = (req, res) => {
   });
 };
 
-module.exports = { login, register };
+const getAdmins = (req, res) => {
+  const db = readDB();
+  const admins = db.users.filter(u => u.role === 'admin');
+  res.json(admins);
+};
+
+const createAdmin = (req, res) => {
+  const { name, email, hospital } = req.body;
+  const db = readDB();
+
+  if (!name || !email) {
+    return res.status(400).json({ message: 'Name and email are required' });
+  }
+
+  if (db.users.find(u => u.email === email)) {
+    return res.status(400).json({ message: 'User already exists' });
+  }
+
+  const newAdmin = {
+    id: Date.now().toString(),
+    name,
+    email,
+    password: '123',
+    role: 'admin',
+    hospital: hospital || 'Unassigned',
+    hospitalId: ''
+  };
+
+  db.users.push(newAdmin);
+  writeDB(db);
+
+  res.status(201).json(newAdmin);
+};
+
+const updateAdmin = (req, res) => {
+  const { id } = req.params;
+  const { name, email, hospital } = req.body;
+  const db = readDB();
+
+  const adminIndex = db.users.findIndex(u => u.id === id && u.role === 'admin');
+  if (adminIndex === -1) {
+    return res.status(404).json({ message: 'Admin not found' });
+  }
+
+  if (!name || !email) {
+    return res.status(400).json({ message: 'Name and email are required' });
+  }
+
+  const existingEmailUser = db.users.find(u => u.email === email && u.id !== id);
+  if (existingEmailUser) {
+    return res.status(400).json({ message: 'Another user already uses this email' });
+  }
+
+  db.users[adminIndex] = {
+    ...db.users[adminIndex],
+    name,
+    email,
+    hospital: hospital || db.users[adminIndex].hospital || 'Unassigned'
+  };
+
+  writeDB(db);
+  res.json(db.users[adminIndex]);
+};
+
+const deleteAdmin = (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  const adminIndex = db.users.findIndex(u => u.id === id && u.role === 'admin');
+  if (adminIndex === -1) {
+    return res.status(404).json({ message: 'Admin not found' });
+  }
+
+  const removedAdmin = db.users.splice(adminIndex, 1)[0];
+  writeDB(db);
+  res.json({ message: 'Admin deleted', admin: removedAdmin });
+};
+
+module.exports = { login, register, getAdmins, createAdmin, updateAdmin, deleteAdmin };

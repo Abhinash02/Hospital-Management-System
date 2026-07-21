@@ -9,6 +9,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
 import CentreOfExcellence from './pages/CentreOfExcellence';
+import Contact from './pages/Contact';
 import Doctors from './pages/Doctors';
 import Hospitals from './pages/Hospitals';
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/excellence" element={<CentreOfExcellence />} />
             <Route path="/doctors" element={<Doctors />} />
             <Route path="/hospitals" element={<Hospitals />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/superadmin" element={<SuperAdminDashboard />} />

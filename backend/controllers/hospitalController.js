@@ -13,11 +13,21 @@ const getHospitalById = (req, res) => {
 };
 
 const createHospital = (req, res) => {
+  const { name, location, beds, contact } = req.body;
+  if (!name || !location) {
+    return res.status(400).json({ message: 'Hospital name and location are required' });
+  }
+
   const db = readDB();
   const newHospital = {
     id: Date.now().toString(),
-    ...req.body
+    name,
+    location,
+    beds: beds || 'N/A',
+    contact: contact || '',
+    createdAt: new Date().toISOString()
   };
+
   db.hospitals.push(newHospital);
   writeDB(db);
   res.status(201).json(newHospital);
@@ -33,4 +43,14 @@ const updateHospital = (req, res) => {
   res.json(db.hospitals[index]);
 };
 
-module.exports = { getHospitals, getHospitalById, createHospital, updateHospital };
+const deleteHospital = (req, res) => {
+  const db = readDB();
+  const index = db.hospitals.findIndex(h => h.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Hospital not found' });
+
+  const removedHospital = db.hospitals.splice(index, 1)[0];
+  writeDB(db);
+  res.json({ message: 'Hospital deleted', hospital: removedHospital });
+};
+
+module.exports = { getHospitals, getHospitalById, createHospital, updateHospital, deleteHospital };

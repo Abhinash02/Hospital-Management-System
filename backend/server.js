@@ -12,10 +12,12 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes');
 const hospitalRoutes = require('./routes/hospitalRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/hospitals', hospitalRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/contacts', contactRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

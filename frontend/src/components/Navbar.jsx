@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
@@ -8,6 +8,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkAuth = () => {
@@ -22,6 +23,10 @@ export default function Navbar() {
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) setIsOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -56,10 +61,36 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6 items-center font-medium text-sm text-gray-700">
-            <Link to="/" className="hover:text-medical-blue transition-colors">Home</Link>
-            <Link to="/excellence" className="hover:text-medical-blue transition-colors">Centre of Excellence</Link>
-            <Link to="/doctors" className="hover:text-medical-blue transition-colors">Doctors</Link>
-            <Link to="/hospitals" className="hover:text-medical-blue transition-colors">Hospitals</Link>
+            <NavLink
+              to="/"
+              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/excellence"
+              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+            >
+              Centre of Excellence
+            </NavLink>
+            <NavLink
+              to="/doctors"
+              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+            >
+              Doctors
+            </NavLink>
+            <NavLink
+              to="/hospitals"
+              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+            >
+              Hospitals
+            </NavLink>
+            <NavLink
+              to="/contact"
+              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+            >
+              Contact
+            </NavLink>
             
             {user ? (
               <div className="flex items-center gap-4 ml-4">
@@ -90,9 +121,10 @@ export default function Navbar() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-medical-blue focus:outline-none"
+              aria-label="Toggle navigation"
+              className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-200 bg-medical-light text-medical-dark shadow-sm hover:border-medical-blue hover:text-medical-blue transition-colors focus:outline-none focus:ring-2 focus:ring-medical-blue"
             >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
@@ -112,6 +144,13 @@ export default function Navbar() {
               <Link to="/excellence" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-medical-blue hover:bg-gray-50">Centre of Excellence</Link>
               <Link to="/doctors" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-medical-blue hover:bg-gray-50">Doctors</Link>
               <Link to="/hospitals" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-medical-blue hover:bg-gray-50">Hospitals</Link>
+              <NavLink
+                to="/contact"
+                onClick={() => setIsOpen(false)}
+                className={({ isActive }) => `block px-3 py-2 rounded-md text-base font-medium transition ${isActive ? 'text-medical-blue bg-gray-100' : 'text-gray-700 hover:text-medical-blue hover:bg-gray-50'}`}
+              >
+                Contact
+              </NavLink>
               
               {user ? (
                 <>

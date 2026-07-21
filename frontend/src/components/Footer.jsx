@@ -40,10 +40,10 @@ export default function Footer() {
             <h4 className="text-lg font-bold mb-4 border-b border-gray-600 pb-2">Quick Links</h4>
             <ul className="space-y-2 text-sm text-gray-300">
               <li><Link to="/" className="hover:text-medical-light transition-colors">Home</Link></li>
-              <li><Link to="#about" className="hover:text-medical-light transition-colors">About Us</Link></li>
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Find a Doctor</Link></li>
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Book an Appointment</Link></li>
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Insurance</Link></li>
+              <li><Link to="/about" className="hover:text-medical-light transition-colors">About Us</Link></li>
+              <li><Link to="/doctors" className="hover:text-medical-light transition-colors">Find a Doctor</Link></li>
+              <li><Link to="/login" className="hover:text-medical-light transition-colors">Book an Appointment</Link></li>
+              <li><Link to="/login" className="hover:text-medical-light transition-colors">Insurance</Link></li>
             </ul>
           </motion.div>
 

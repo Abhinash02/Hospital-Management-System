@@ -138,7 +138,15 @@ export default function Login() {
             >
               {isLogin ? 'Register here' : 'Login here'}
             </button>
+
           </div>
+          <div>
+                <label className="block text-sm font-semibold text-black-700 mb-1">Dummy Login Credentials</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Supper Admin-- superadmin@hospital.com <br></br> Password: 123 </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Admin-- admin@hospital.com <br></br> Password: 123 </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">User-- user@hospital.com <br></br> Password: 123 </label>
+                
+              </div>
         </div>
       </div>
     </div>
