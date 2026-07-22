@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
@@ -33,7 +33,38 @@ const PageLoader = () => (
 function App() {
   return (
     <Router>
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right" 
+        toastOptions={{
+          duration: 4000,
+          style: {
+            padding: '12px 16px',
+            borderRadius: '12px',
+            fontSize: '14px',
+            maxWidth: '400px'
+          }
+        }}
+      >
+        {(t) => (
+          <div
+            className={`flex items-center justify-between gap-3 w-full bg-white text-gray-800 p-3 rounded-xl shadow-lg border border-gray-100 ${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {t.icon}
+              <span className="text-sm font-medium">{t.message}</span>
+            </div>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer shrink-0"
+              title="Close notification"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+      </Toaster>
       <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
         <Navbar />
         <main className="flex-grow">
