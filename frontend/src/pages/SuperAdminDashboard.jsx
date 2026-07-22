@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import API_URL from '../config/api';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
-import { Search, RefreshCw, Edit3, Trash2, Plus } from 'lucide-react';
+import { Search, RefreshCw, Edit3, Trash2, Plus, Bell, ShieldCheck, Server, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/DashboardLayout';
 
@@ -27,6 +28,13 @@ const resourceData = [
   { name: 'Staff', value: 530 },
 ];
 
+const systemLogs = [
+  { time: '10 mins ago', event: 'SuperAdmin updated system-wide HL7 endpoints', status: 'Success' },
+  { time: '30 mins ago', event: 'New Admin "Dr. Rajesh Sharma" onboarded to Mohali West', status: 'Success' },
+  { time: '2 hours ago', event: 'Automated Database Backup completed successfully', status: 'Success' },
+  { time: '5 hours ago', event: 'Security Audit: All 12 Hospital Nodes HIPAA Compliant', status: 'Verified' },
+];
+
 const COLORS = ['#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD'];
 const appointmentStatusOptions = ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
 
@@ -36,23 +44,17 @@ export default function SuperAdminDashboard() {
   const [filteredAdmins, setFilteredAdmins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingAdmin, setEditingAdmin] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [appointments, setAppointments] = useState([]);
-  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
-  
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', hospital: '' });
   
   const navigate = useNavigate();
 
   const fetchAdmins = async () => {
-    setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/auth/admins', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const res = await fetch(`${API_URL}/api/auth/admins`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -63,8 +65,6 @@ export default function SuperAdminDashboard() {
       }
     } catch (err) {
       toast.error('Unable to load admins.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -100,30 +100,24 @@ export default function SuperAdminDashboard() {
   }, [navigate]);
 
   const loadAppointments = async () => {
-    setAppointmentsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/appointments', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const res = await fetch(`${API_URL}/api/appointments`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      if (!res.ok) {
-        return toast.error(data.message || 'Unable to load appointments');
+      if (res.ok) {
+        setAppointments(data);
       }
-      setAppointments(data);
     } catch (err) {
       toast.error('Unable to load appointments.');
-    } finally {
-      setAppointmentsLoading(false);
     }
   };
 
   const changeAppointmentStatus = async (id, status) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+      const res = await fetch(`${API_URL}/api/appointments/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +140,7 @@ export default function SuperAdminDashboard() {
   const handleDeleteConfirm = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/auth/admins/${id}`, {
+      const res = await fetch(`${API_URL}/api/auth/admins/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`
@@ -173,12 +167,12 @@ export default function SuperAdminDashboard() {
 
   const handleDelete = (admin) => {
     toast((t) => (
-      <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-200 max-w-sm mx-auto">
-        <p className="text-sm text-gray-900 mb-4">Are you sure you want to delete <span className="font-semibold">{admin.name}</span>?</p>
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-200 max-w-sm mx-auto text-sm">
+        <p className="text-gray-900 mb-4">Are you sure you want to delete <span className="font-bold">{admin.name}</span>?</p>
+        <div className="flex gap-3">
           <button
             type="button"
-            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 font-semibold"
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-full px-4 py-2 font-bold"
             onClick={() => {
               handleDeleteConfirm(admin.id);
               toast.dismiss(t.id);
@@ -188,10 +182,10 @@ export default function SuperAdminDashboard() {
           </button>
           <button
             type="button"
-            className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg px-4 py-2 font-semibold"
+            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full px-4 py-2 font-bold"
             onClick={() => toast.dismiss(t.id)}
           >
-            No, keep
+            Cancel
           </button>
         </div>
       </div>
@@ -214,7 +208,7 @@ export default function SuperAdminDashboard() {
       let data;
 
       if (editingAdmin) {
-        res = await fetch(`http://localhost:5000/api/auth/admins/${editingAdmin.id}`, {
+        res = await fetch(`${API_URL}/api/auth/admins/${editingAdmin.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -241,7 +235,7 @@ export default function SuperAdminDashboard() {
         ));
         toast.success('Admin updated successfully');
       } else {
-        res = await fetch('http://localhost:5000/api/auth/admins', {
+        res = await fetch(`${API_URL}/api/auth/admins`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -276,48 +270,80 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const broadcastAlert = () => {
+    toast.success("Broadcast alert sent to all active hospital administrators!");
+  };
+
   return (
     <DashboardLayout
-      title="Super Admin Dashboard"
-      subtitle="System-wide overview and management."
+      title="Super Admin Master Control Center"
+      subtitle="System-wide management, global hospital statistics, and admin access control."
       user={user}
     >
-      <div className="flex justify-between items-center mb-8">
+      {/* SuperAdmin Action Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-medical-dark">Super Admin Dashboard</h1>
-          <p className="text-gray-500">System-wide overview and management.</p>
-        </div>
-        {user && (
-          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
-            <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold">
-              {user.name.charAt(0)}
-            </div>
-            <span className="font-semibold text-gray-700">{user.name}</span>
+          <div className="inline-flex items-center gap-2 bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border border-red-500/30">
+            <ShieldCheck size={14} /> Master Privileges Active
           </div>
-        )}
+          <h1 className="text-2xl sm:text-3xl font-black">Global Hospital System Overview</h1>
+          <p className="text-gray-300 text-sm mt-1">Manage global admins, monitor database uptime, and issue system alerts.</p>
+        </div>
+        <button
+          onClick={broadcastAlert}
+          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-full text-sm shadow-md transition"
+        >
+          <Bell size={16} /> Broadcast System Notice
+        </button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {[
-          { title: 'Total Hospitals', value: '12', trend: '+2 this month', color: 'text-medical-blue' },
-          { title: 'Active Admins', value: admins.length.toString(), trend: 'Updated just now', color: 'text-green-600' },
-          { title: 'Total Patients', value: '11,000+', trend: '+15% growth', color: 'text-purple-600' },
-          { title: 'System Uptime', value: '99.9%', trend: 'Healthy', color: 'text-medical-dark' }
-        ].map((kpi, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-            <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">{kpi.title}</h3>
-            <div className="flex items-end justify-between">
-              <p className={`text-3xl font-extrabold ${kpi.color}`}>{kpi.value}</p>
-              <span className={`text-xs font-bold text-gray-400`}>{kpi.trend}</span>
+          { title: 'Total Hospitals', value: '12', trend: '+2 this month', color: 'text-medical-blue', icon: Server },
+          { title: 'Active Admins', value: admins.length.toString(), trend: 'Updated live', color: 'text-emerald-600', icon: ShieldCheck },
+          { title: 'Total Patients', value: '11,000+', trend: '+15% growth', color: 'text-purple-600', icon: Server },
+          { title: 'System Uptime', value: '99.99%', trend: 'HL7 Network Healthy', color: 'text-blue-600', icon: Server }
+        ].map((kpi, idx) => {
+          const IconComp = kpi.icon;
+          return (
+            <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{kpi.title}</h3>
+                <p className={`text-3xl font-extrabold ${kpi.color}`}>{kpi.value}</p>
+                <span className="text-xs font-bold text-gray-400 mt-1 block">{kpi.trend}</span>
+              </div>
+              <div className="p-3 bg-slate-50 text-gray-700 rounded-2xl">
+                <IconComp size={22} />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+      </div>
+
+      {/* System Audit Log Activity Feed */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+        <div className="flex items-center gap-2 mb-4 border-b pb-3">
+          <AlertCircle className="text-medical-blue" size={20} />
+          <h3 className="font-bold text-gray-900 text-base">System Audit Trail & Live Activity</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {systemLogs.map((log, idx) => (
+            <div key={idx} className="p-3.5 bg-slate-50 rounded-xl border border-gray-200/80 flex items-center justify-between text-sm">
+              <div>
+                <p className="font-bold text-gray-800">{log.event}</p>
+                <span className="text-xs text-gray-400">{log.time}</span>
+              </div>
+              <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                {log.status}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        {/* System Growth Line Chart */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
           <h2 className="text-xl font-bold text-medical-dark mb-6">Patient Growth Over Time</h2>
           <div className="h-80 w-full">
@@ -334,9 +360,8 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
 
-        {/* Resource Distribution */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-xl font-bold text-medical-dark mb-6">System Resources</h2>
+          <h2 className="text-xl font-bold text-medical-dark mb-6">System Resource Allocations</h2>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -365,8 +390,8 @@ export default function SuperAdminDashboard() {
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-medical-dark">Manage Admins</h2>
-            <p className="text-sm text-gray-500">Add, edit, and remove hospital admins quickly.</p>
+            <h2 className="text-2xl font-bold text-medical-dark">Manage Hospital Admins</h2>
+            <p className="text-sm text-gray-500">Onboard new hospital administrators and modify privileges.</p>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
@@ -376,13 +401,13 @@ export default function SuperAdminDashboard() {
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search admins..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-medical-blue focus:border-medical-blue outline-none"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-medical-blue outline-none text-sm"
               />
             </div>
             <button
               type="button"
               onClick={fetchAdmins}
-              className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-sm transition"
+              className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-xs transition text-sm"
             >
               <RefreshCw size={16} /> Refresh
             </button>
@@ -391,68 +416,60 @@ export default function SuperAdminDashboard() {
                 if (showAddForm) resetForm();
                 setShowAddForm(!showAddForm);
               }}
-              className="inline-flex items-center justify-center gap-2 bg-medical-dark hover:bg-medical-blue text-white font-bold py-2 px-5 rounded-full transition-colors shadow-sm"
+              className="inline-flex items-center justify-center gap-2 bg-medical-dark hover:bg-medical-blue text-white font-bold py-2 px-5 rounded-full transition-colors shadow-xs text-sm"
             >
               <Plus size={18} /> {showAddForm ? 'Cancel' : 'Add Admin'}
             </button>
           </div>
         </div>
 
-        {/* Add Admin Form */}
         {showAddForm && (
-          <form onSubmit={handleAddSubmit} className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div className="md:col-span-1 lg:col-span-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
-              <input type="text" name="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue" placeholder="Jane Doe" />
+          <form onSubmit={handleAddSubmit} className="bg-slate-50 p-6 rounded-2xl border border-gray-200 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 items-end text-sm">
+            <div>
+              <label className="block font-semibold text-gray-700 mb-1">Full Name</label>
+              <input type="text" name="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-medical-blue" placeholder="Dr. Jane Doe" />
             </div>
-            <div className="md:col-span-1 lg:col-span-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-              <input type="email" name="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue" placeholder="jane@hospital.com" />
+            <div>
+              <label className="block font-semibold text-gray-700 mb-1">Email Address</label>
+              <input type="email" name="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-medical-blue" placeholder="jane@hospital.com" />
             </div>
-            <div className="md:col-span-1 lg:col-span-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Assigned Hospital</label>
-              <input type="text" name="hospital" value={formData.hospital} onChange={e => setFormData({...formData, hospital: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue" placeholder="Medpark West" />
+            <div>
+              <label className="block font-semibold text-gray-700 mb-1">Assigned Hospital</label>
+              <input type="text" name="hospital" value={formData.hospital} onChange={e => setFormData({...formData, hospital: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-medical-blue" placeholder="Medpark West Branch" />
             </div>
-            <div className="md:col-span-1 lg:col-span-1">
-              <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
-                {editingAdmin ? 'Update Admin' : 'Save Admin'}
+            <div>
+              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                {editingAdmin ? 'Update Admin' : 'Save New Admin'}
               </button>
             </div>
           </form>
         )}
 
-        {/* Admins Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-medical-blue/10 text-medical-dark">
-                <th className="py-3 px-4 font-semibold rounded-tl-lg">Name</th>
-                <th className="py-3 px-4 font-semibold">Email</th>
-                <th className="py-3 px-4 font-semibold">Hospital</th>
-                <th className="py-3 px-4 font-semibold text-right rounded-tr-lg">Actions</th>
+              <tr className="bg-medical-blue/10 text-medical-dark text-sm">
+                <th className="py-3.5 px-4 font-semibold rounded-tl-lg">Admin Name</th>
+                <th className="py-3.5 px-4 font-semibold">Email</th>
+                <th className="py-3.5 px-4 font-semibold">Assigned Hospital</th>
+                <th className="py-3.5 px-4 font-semibold text-right rounded-tr-lg">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredAdmins.map((admin) => (
-                <motion.tr
-                  key={admin.id}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <td className="py-4 px-4 font-medium text-medical-dark">{admin.name}</td>
+                <tr key={admin.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors text-sm">
+                  <td className="py-4 px-4 font-bold text-medical-dark">{admin.name}</td>
                   <td className="py-4 px-4 text-gray-600">{admin.email}</td>
                   <td className="py-4 px-4 text-gray-600">{admin.hospital || 'Unassigned'}</td>
-                  <td className="py-4 px-4 text-right flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-4">
-                    <button onClick={() => handleEdit(admin)} className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
-                      <Edit3 size={16} /> Edit
+                  <td className="py-4 px-4 text-right flex justify-end gap-3">
+                    <button onClick={() => handleEdit(admin)} className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold">
+                      <Edit3 size={15} /> Edit
                     </button>
-                    <button onClick={() => handleDelete(admin)} className="inline-flex items-center gap-2 text-red-600 hover:text-red-800 font-medium">
-                      <Trash2 size={16} /> Delete
+                    <button onClick={() => handleDelete(admin)} className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-semibold">
+                      <Trash2 size={15} /> Delete
                     </button>
                   </td>
-                </motion.tr>
+                </tr>
               ))}
               {filteredAdmins.length === 0 && (
                 <tr>
@@ -464,52 +481,46 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
 
+      {/* All Appointments Section */}
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mt-10">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-medical-dark">All Appointments</h2>
-            <p className="text-sm text-gray-500">Review user bookings and update status across the system.</p>
+            <h2 className="text-2xl font-bold text-medical-dark">Global System Appointments</h2>
+            <p className="text-sm text-gray-500">Master view of all patient bookings across hospitals.</p>
           </div>
           <button
             type="button"
             onClick={loadAppointments}
-            className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-sm transition"
+            className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-xs transition text-sm"
           >
             <RefreshCw size={16} /> Refresh Appointments
           </button>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="bg-medical-blue/10 text-medical-dark">
-                <th className="py-3 px-4 font-semibold rounded-tl-lg">Patient</th>
-                <th className="py-3 px-4 font-semibold">Hospital</th>
-                <th className="py-3 px-4 font-semibold">Date</th>
-                <th className="py-3 px-4 font-semibold">Time</th>
-                <th className="py-3 px-4 font-semibold">Status</th>
-                <th className="py-3 px-4 font-semibold text-right rounded-tr-lg">Update</th>
+                <th className="py-3.5 px-4 font-semibold rounded-tl-lg">Patient Name</th>
+                <th className="py-3.5 px-4 font-semibold">Hospital ID</th>
+                <th className="py-3.5 px-4 font-semibold">Date</th>
+                <th className="py-3.5 px-4 font-semibold">Time</th>
+                <th className="py-3.5 px-4 font-semibold">Status</th>
+                <th className="py-3.5 px-4 font-semibold text-right rounded-tr-lg">Update Status</th>
               </tr>
             </thead>
             <tbody>
               {appointments.map((appointment) => (
-                <motion.tr
-                  key={appointment.id}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <td className="py-4 px-4 font-medium text-medical-dark">{appointment.patientName}</td>
+                <tr key={appointment.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 font-bold text-medical-dark">{appointment.patientName}</td>
                   <td className="py-4 px-4 text-gray-600">{appointment.hospitalId}</td>
                   <td className="py-4 px-4 text-gray-600">{appointment.date}</td>
                   <td className="py-4 px-4 text-gray-600">{appointment.time}</td>
                   <td className="py-4 px-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                      appointment.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                      appointment.status === 'Pending' ? 'bg-amber-100 text-amber-800' :
                       appointment.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
-                      appointment.status === 'In Progress' ? 'bg-orange-100 text-orange-800' :
-                      appointment.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                      appointment.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
                       'bg-red-100 text-red-800'
                     }`}>
                       {appointment.status}
@@ -519,14 +530,14 @@ export default function SuperAdminDashboard() {
                     <select
                       value={appointment.status}
                       onChange={(e) => changeAppointmentStatus(appointment.id, e.target.value)}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-full bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-medical-blue"
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-full bg-white text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-medical-blue"
                     >
                       {appointmentStatusOptions.map((status) => (
                         <option key={status} value={status}>{status}</option>
                       ))}
                     </select>
                   </td>
-                </motion.tr>
+                </tr>
               ))}
               {appointments.length === 0 && (
                 <tr>

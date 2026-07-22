@@ -11,7 +11,7 @@ const login = (req, res) => {
   }
 
   const token = jwt.sign(
-    { id: user.id, role: user.role, name: user.name, hospitalId: user.hospitalId },
+    { id: user.id, role: user.role, name: user.name, mobile: user.mobile, hospitalId: user.hospitalId },
     process.env.JWT_SECRET || 'secret123',
     { expiresIn: '1d' }
   );
@@ -23,6 +23,7 @@ const login = (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      mobile: user.mobile || '',
       role: user.role,
       hospitalId: user.hospitalId
     }
@@ -30,17 +31,23 @@ const login = (req, res) => {
 };
 
 const register = (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, mobile, password } = req.body;
   const db = readDB();
 
   if (db.users.find(u => u.email === email)) {
-    return res.status(400).json({ message: 'User already exists' });
+    return res.status(400).json({ message: 'User already exists with this email' });
+  }
+
+  // Server-side mobile number validation (exactly 10 digits)
+  if (!mobile || !/^\d{10}$/.test(mobile.toString().trim())) {
+    return res.status(400).json({ message: 'Mobile number must be exactly 10 digits' });
   }
 
   const newUser = {
     id: Date.now().toString(),
     name,
     email,
+    mobile: mobile.toString().trim(),
     password, 
     role: 'user'
   };
@@ -49,7 +56,7 @@ const register = (req, res) => {
   writeDB(db);
 
   const token = jwt.sign(
-    { id: newUser.id, role: newUser.role, name: newUser.name },
+    { id: newUser.id, role: newUser.role, name: newUser.name, mobile: newUser.mobile },
     process.env.JWT_SECRET || 'secret123',
     { expiresIn: '1d' }
   );
@@ -61,6 +68,7 @@ const register = (req, res) => {
       id: newUser.id,
       name: newUser.name,
       email: newUser.email,
+      mobile: newUser.mobile,
       role: newUser.role
     }
   });
@@ -73,7 +81,7 @@ const getAdmins = (req, res) => {
 };
 
 const createAdmin = (req, res) => {
-  const { name, email, hospital } = req.body;
+  const { name, email, mobile, hospital } = req.body;
   const db = readDB();
 
   if (!name || !email) {
@@ -88,6 +96,7 @@ const createAdmin = (req, res) => {
     id: Date.now().toString(),
     name,
     email,
+    mobile: mobile || '',
     password: '123',
     role: 'admin',
     hospital: hospital || 'Unassigned',
@@ -102,7 +111,7 @@ const createAdmin = (req, res) => {
 
 const updateAdmin = (req, res) => {
   const { id } = req.params;
-  const { name, email, hospital } = req.body;
+  const { name, email, mobile, hospital } = req.body;
   const db = readDB();
 
   const adminIndex = db.users.findIndex(u => u.id === id && u.role === 'admin');
@@ -123,6 +132,7 @@ const updateAdmin = (req, res) => {
     ...db.users[adminIndex],
     name,
     email,
+    mobile: mobile !== undefined ? mobile : db.users[adminIndex].mobile || '',
     hospital: hospital || db.users[adminIndex].hospital || 'Unassigned'
   };
 

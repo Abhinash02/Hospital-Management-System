@@ -7,83 +7,94 @@ export default function Footer() {
   return (
     <footer className="bg-medical-dark text-white pt-16 pb-8 border-t-4 border-medical-blue">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-          
-          {/* Brand & Description */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-white rounded flex items-center justify-center text-medical-blue font-bold text-xl">
-                M
-              </div>
-              <span className="font-bold text-2xl tracking-tight text-white">
-                MEDPARK <span className="text-red-500 text-sm align-top ml-1">✚</span>
-              </span>
+        
+        {/* Brand & Summary Header Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 pb-8 border-b border-gray-700/80"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-medical-blue font-black text-xl shadow-md">
+              M
             </div>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              Delivering the global standard for precision healthcare. Your health is our top priority, and we are dedicated to saving lives and enhancing community wellness.
-            </p>
-          </motion.div>
+            <span className="font-extrabold text-2xl tracking-tight text-white">
+              MEDPARK <span className="text-red-500 text-base align-top">✚</span>
+            </span>
+          </div>
+          <p className="text-gray-300 text-sm md:text-base leading-relaxed max-w-3xl">
+            Delivering the global standard for precision healthcare. Your health is our top priority, and we are dedicated to saving lives and enhancing community wellness with top medical specialists.
+          </p>
+        </motion.div>
 
-          {/* Quick Links */}
+        {/* 2-Column Grid on Mobile (Quick Links Left | Departments Right) & 3-Column on Desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-12">
+          
+          {/* Quick Links - LEFT column on mobile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <h4 className="text-lg font-bold mb-4 border-b border-gray-600 pb-2">Quick Links</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li><Link to="/" className="hover:text-medical-light transition-colors">Home</Link></li>
-              <li><Link to="/about" className="hover:text-medical-light transition-colors">About Us</Link></li>
-              <li><Link to="/doctors" className="hover:text-medical-light transition-colors">Find a Doctor</Link></li>
-              <li><Link to="/login" className="hover:text-medical-light transition-colors">Book an Appointment</Link></li>
-              <li><Link to="/login" className="hover:text-medical-light transition-colors">Insurance</Link></li>
+            <h4 className="text-base md:text-lg font-bold mb-4 border-b border-gray-600 pb-2 text-white flex items-center gap-1.5">
+              <span>⚡</span> Quick Links
+            </h4>
+            <ul className="space-y-2.5 text-xs md:text-sm text-gray-300">
+              <li><Link to="/" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Home</Link></li>
+              <li><Link to="/excellence" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Centre of Excellence</Link></li>
+              <li><Link to="/doctors" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Doctors</Link></li>
+              <li><Link to="/hospitals" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Hospitals Network</Link></li>
+              <li><Link to="/contact" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Contact Us</Link></li>
+              <li><Link to="/dashboard/book-appointment" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Book Appointment</Link></li>
             </ul>
           </motion.div>
 
-          {/* Departments */}
+          {/* Departments - RIGHT column on mobile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <h4 className="text-lg font-bold mb-4 border-b border-gray-600 pb-2">Departments</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Cardiology</Link></li>
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Neurology</Link></li>
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Orthopedics</Link></li>
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Pediatrics</Link></li>
-              <li><Link to="#" className="hover:text-medical-light transition-colors">Oncology</Link></li>
+            <h4 className="text-base md:text-lg font-bold mb-4 border-b border-gray-600 pb-2 text-white flex items-center gap-1.5">
+              <span>🏥</span> Departments
+            </h4>
+            <ul className="space-y-2.5 text-xs md:text-sm text-gray-300">
+              <li><Link to="/excellence" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Cardiology</Link></li>
+              <li><Link to="/excellence" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Neurology</Link></li>
+              <li><Link to="/excellence" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Orthopedics</Link></li>
+              <li><Link to="/excellence" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Pediatrics</Link></li>
+              <li><Link to="/excellence" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Oncology</Link></li>
+              <li><Link to="/excellence" className="hover:text-cyan-400 transition-colors flex items-center gap-1"><span>›</span> Gastroenterology</Link></li>
             </ul>
           </motion.div>
 
-          {/* Contact Info */}
+          {/* Contact Info - Full width below mobile 2-col layout */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3 }}
+            className="col-span-2 md:col-span-1 border-t md:border-t-0 border-gray-700/80 pt-6 md:pt-0"
           >
-            <h4 className="text-lg font-bold mb-4 border-b border-gray-600 pb-2">Contact Us</h4>
-            <ul className="space-y-4 text-sm text-gray-300">
+            <h4 className="text-base md:text-lg font-bold mb-4 border-b border-gray-600 pb-2 text-white flex items-center gap-1.5">
+              <span>📞</span> Contact Us
+            </h4>
+            <ul className="space-y-3.5 text-xs md:text-sm text-gray-300">
               <li className="flex items-start gap-3">
-                <span className="text-medical-blue mt-1">📍</span>
+                <span className="text-cyan-400 mt-0.5">📍</span>
                 <span>123 Health Avenue, Medical District,<br/>Mohali, PB 160055</span>
               </li>
               <li className="flex items-center gap-3">
-                <span className="text-medical-blue">📞</span>
-                <span>+91 98767 69966</span>
+                <span className="text-cyan-400">📞</span>
+                <a href="tel:+919876769966" className="hover:text-white transition">+91 98767 69966</a>
               </li>
               <li className="flex items-center gap-3">
-                <span className="text-medical-blue">✉️</span>
-                <span>contact@medpark.com</span>
+                <span className="text-cyan-400">✉️</span>
+                <a href="mailto:contact@medpark.com" className="hover:text-white transition">contact@medpark.com</a>
               </li>
             </ul>
           </motion.div>
@@ -91,11 +102,11 @@ export default function Footer() {
         </div>
         
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-gray-700 text-center md:flex md:justify-between md:items-center text-sm text-gray-400">
+        <div className="pt-8 border-t border-gray-700/80 text-center md:flex md:justify-between md:items-center text-xs md:text-sm text-gray-400">
           <p>&copy; {currentYear} Medpark Hospital. All Rights Reserved.</p>
           <div className="flex justify-center space-x-6 mt-4 md:mt-0">
-            <Link to="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/contact" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/contact" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

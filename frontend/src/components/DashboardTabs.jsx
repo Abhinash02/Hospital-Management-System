@@ -1,0 +1,36 @@
+import { NavLink } from 'react-router-dom';
+
+const ROLE_TABS = {
+  superadmin: [
+    { name: 'Manage Admin', to: '/superadmin/manage-admin' },
+    { name: 'Appointments', to: '/superadmin/appointments' }
+  ],
+  admin: [
+    { name: 'Manage Hospitals', to: '/admin/manage-hospitals' },
+    { name: 'Appointments', to: '/admin/appointments' }
+  ],
+  user: [
+    { name: 'Book Appointment', to: '/dashboard/book-appointment' },
+    { name: 'My Appointments', to: '/dashboard/my-appointments' }
+  ]
+};
+
+export default function DashboardTabs({ role }) {
+  const tabs = ROLE_TABS[role] || [];
+
+  return (
+    <div className="mb-8 flex flex-wrap gap-3">
+      {tabs.map((tab) => (
+        <NavLink
+          key={tab.name}
+          to={tab.to}
+          className={({ isActive }) =>
+            `inline-flex items-center px-5 py-2 rounded-full border ${isActive ? 'bg-medical-blue text-white border-medical-blue' : 'bg-white text-gray-700 border-gray-200 hover:border-medical-blue hover:text-medical-blue'} font-semibold transition`
+          }
+        >
+          {tab.name}
+        </NavLink>
+      ))}
+    </div>
+  );
+}

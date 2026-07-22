@@ -43,6 +43,39 @@ export default function Navbar() {
     return '/dashboard';
   };
 
+  const isDashboardRoute = () => {
+    if (!user) return false;
+    if (user.role === 'superadmin') return location.pathname.startsWith('/superadmin');
+    if (user.role === 'admin') return location.pathname.startsWith('/admin');
+    return location.pathname.startsWith('/dashboard');
+  };
+
+  const getRoleLinks = () => {
+    if (!user) return [];
+    if (user.role === 'superadmin') {
+      return [
+        { name: 'Dashboard', to: '/superadmin' },
+        { name: 'Manage Admin', to: '/superadmin/manage-admin' },
+        { name: 'Appointments', to: '/superadmin/appointments' }
+      ];
+    }
+    if (user.role === 'admin') {
+      return [
+        { name: 'Dashboard', to: '/admin' },
+        { name: 'Manage Hospitals', to: '/admin/manage-hospitals' },
+        { name: 'Appointments', to: '/admin/appointments' }
+      ];
+    }
+    return [
+      { name: 'Dashboard', to: '/dashboard' },
+      { name: 'Book Appointment', to: '/dashboard/book-appointment' },
+      { name: 'My Appointments', to: '/dashboard/my-appointments' }
+    ];
+  };
+
+  const dashboardLinks = getRoleLinks();
+  const showDashboardNav = user && isDashboardRoute();
+
   return (
     <header className="bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,42 +94,77 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6 items-center font-medium text-sm text-gray-700">
-            <NavLink
-              to="/"
-              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/excellence"
-              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
-            >
-              Centre of Excellence
-            </NavLink>
-            <NavLink
-              to="/doctors"
-              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
-            >
-              Doctors
-            </NavLink>
-            <NavLink
-              to="/hospitals"
-              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
-            >
-              Hospitals
-            </NavLink>
-            <NavLink
-              to="/contact"
-              className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
-            >
-              Contact
-            </NavLink>
-            
-            {user ? (
-              <div className="flex items-center gap-4 ml-4">
-                <span className="text-gray-700 font-semibold hidden lg:inline-block">
-                  Hello, {user.name}
-                </span>
+            {!showDashboardNav && (
+              <>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+                >
+                  Home
+                </NavLink>
+                <NavLink
+                  to="/excellence"
+                  className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+                >
+                  Centre of Excellence
+                </NavLink>
+                <NavLink
+                  to="/doctors"
+                  className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+                >
+                  Doctors
+                </NavLink>
+                <NavLink
+                  to="/hospitals"
+                  className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+                >
+                  Hospitals
+                </NavLink>
+                <NavLink
+                  to="/contact"
+                  className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+                >
+                  Contact
+                </NavLink>
+              </>
+            )}
+
+            {showDashboardNav ? (
+              <>
+                {dashboardLinks.map((link) => (
+                  <NavLink
+                    key={link.name}
+                    to={link.to}
+                    className={({ isActive }) => `transition-colors ${isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'}`}
+                  >
+                    {link.name}
+                  </NavLink>
+                ))}
+                <div className="flex items-center gap-3 ml-4">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-medical-blue text-white font-semibold uppercase">
+                    {user.name?.charAt(0)}
+                  </div>
+                  <div className="hidden lg:flex flex-col text-sm text-gray-700">
+                    <span className="font-semibold">{user.name}</span>
+                    <span className="text-gray-500 capitalize">{user.role}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex items-center justify-center px-4 py-2 border border-medical-dark rounded-md shadow-sm text-sm font-medium text-medical-dark hover:bg-medical-dark hover:text-white transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
+            ) : user ? (
+              <div className="flex items-center gap-3 ml-4">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-medical-blue text-white font-semibold uppercase">
+                  {user.name?.charAt(0)}
+                </div>
+                <div className="hidden lg:flex flex-col text-sm text-gray-700">
+                  <span className="font-semibold">{user.name}</span>
+                  <span className="text-gray-500 capitalize">{user.role}</span>
+                </div>
                 <Link to={getDashboardLink()} className="text-medical-blue hover:text-medical-dark transition-colors font-semibold">
                   Dashboard
                 </Link>
@@ -151,8 +219,22 @@ export default function Navbar() {
               >
                 Contact
               </NavLink>
-              
-              {user ? (
+
+              {user && isDashboardRoute() ? (
+                <>
+                  {dashboardLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.to}
+                      onClick={() => setIsOpen(false)}
+                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-medical-blue hover:bg-gray-50"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                  <button onClick={() => { handleLogout(); setIsOpen(false); }} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50">Logout</button>
+                </>
+              ) : user ? (
                 <>
                   <Link to={getDashboardLink()} onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-medical-blue hover:bg-gray-50">Dashboard</Link>
                   <button onClick={() => { handleLogout(); setIsOpen(false); }} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50">Logout</button>
