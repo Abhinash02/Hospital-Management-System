@@ -13,14 +13,16 @@ const getHospitalById = (req, res) => {
 };
 
 const createHospital = (req, res) => {
-  const { name, location, beds, contact } = req.body;
+  const { name, location, beds, contact, adminName, adminEmail, adminPassword } = req.body;
   if (!name || !location) {
     return res.status(400).json({ message: 'Hospital name and location are required' });
   }
 
   const db = readDB();
+  const hospitalId = Date.now().toString();
+
   const newHospital = {
-    id: Date.now().toString(),
+    id: hospitalId,
     name,
     location,
     beds: beds || 'N/A',
@@ -29,8 +31,27 @@ const createHospital = (req, res) => {
   };
 
   db.hospitals.push(newHospital);
+
+  // If Admin credentials are specified for this hospital, create an Admin account
+  let createdAdmin = null;
+  if (adminEmail && adminPassword) {
+    const existingUser = db.users.find(u => u.email === adminEmail);
+    if (!existingUser) {
+      createdAdmin = {
+        id: (Date.now() + 1).toString(),
+        name: adminName || `${name} Admin`,
+        email: adminEmail,
+        password: adminPassword,
+        role: 'admin',
+        hospital: name,
+        hospitalId: hospitalId
+      };
+      db.users.push(createdAdmin);
+    }
+  }
+
   writeDB(db);
-  res.status(201).json(newHospital);
+  res.status(201).json({ hospital: newHospital, admin: createdAdmin });
 };
 
 const updateHospital = (req, res) => {

@@ -14,7 +14,15 @@ export default function AdminManageHospitals() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingHospital, setEditingHospital] = useState(null);
-  const [formData, setFormData] = useState({ name: '', location: '', beds: '', contact: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    location: '', 
+    beds: '', 
+    contact: '',
+    adminName: '',
+    adminEmail: '',
+    adminPassword: '' 
+  });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -22,7 +30,7 @@ export default function AdminManageHospitals() {
     const userData = localStorage.getItem('user');
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      if (parsedUser.role !== 'admin') {
+      if (parsedUser.role !== 'admin' && parsedUser.role !== 'superadmin') {
         navigate('/');
       } else {
         setUser(parsedUser);
@@ -48,7 +56,7 @@ export default function AdminManageHospitals() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', location: '', beds: '', contact: '' });
+    setFormData({ name: '', location: '', beds: '', contact: '', adminName: '', adminEmail: '', adminPassword: '' });
     setEditingHospital(null);
   };
 
@@ -63,7 +71,15 @@ export default function AdminManageHospitals() {
 
   const handleEdit = (hospital) => {
     setEditingHospital(hospital);
-    setFormData({ name: hospital.name, location: hospital.location, beds: hospital.beds, contact: hospital.contact });
+    setFormData({ 
+      name: hospital.name, 
+      location: hospital.location, 
+      beds: hospital.beds, 
+      contact: hospital.contact || '',
+      adminName: '',
+      adminEmail: '',
+      adminPassword: ''
+    });
     setShowForm(true);
   };
 
@@ -160,45 +176,89 @@ export default function AdminManageHospitals() {
         </div>
 
         {showForm && (
-          <motion.form initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} onSubmit={handleSubmit} className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div className="md:col-span-1 lg:col-span-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Hospital Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue"
-                placeholder="Medpark Hospital Mohali"
-              />
+          <motion.form initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} onSubmit={handleSubmit} className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Hospital Name *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue bg-white"
+                  placeholder="Medpark Hospital Mohali"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Location *</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue bg-white"
+                  placeholder="Phase 8, Mohali"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Bed Capacity</label>
+                <input
+                  type="text"
+                  name="beds"
+                  value={formData.beds}
+                  onChange={(e) => setFormData({ ...formData, beds: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue bg-white"
+                  placeholder="500+"
+                />
+              </div>
             </div>
-            <div className="md:col-span-1 lg:col-span-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue"
-                placeholder="Phase 8, Mohali"
-              />
-            </div>
-            <div className="md:col-span-1 lg:col-span-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Bed Capacity</label>
-              <input
-                type="text"
-                name="beds"
-                value={formData.beds}
-                onChange={(e) => setFormData({ ...formData, beds: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-medical-blue"
-                placeholder="500+"
-              />
-            </div>
-            <div className="md:col-span-1 lg:col-span-1">
-              <button type="submit" className="w-full bg-medical-blue hover:bg-medical-dark text-white font-bold py-2 px-4 rounded-md transition-colors">
-                {editingHospital ? 'Update Hospital' : 'Save Hospital'}
+
+            {!editingHospital && (
+              <div className="pt-2 border-t border-gray-200">
+                <p className="text-xs font-bold text-medical-dark uppercase tracking-wider mb-2">Optional: Assign Hospital Admin Account</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Name</label>
+                    <input
+                      type="text"
+                      name="adminName"
+                      value={formData.adminName}
+                      onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                      placeholder="Dr. Rajesh Sharma"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Login Email</label>
+                    <input
+                      type="email"
+                      name="adminEmail"
+                      value={formData.adminEmail}
+                      onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                      placeholder="admin.mohali@medpark.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Login Password</label>
+                    <input
+                      type="text"
+                      name="adminPassword"
+                      value={formData.adminPassword}
+                      onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                      placeholder="Set Admin Password (e.g. 123456)"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <button type="submit" className="bg-medical-blue hover:bg-medical-dark text-white font-bold py-2.5 px-6 rounded-md transition-colors text-sm">
+                {editingHospital ? 'Update Hospital' : 'Save Hospital & Admin'}
               </button>
             </div>
           </motion.form>
