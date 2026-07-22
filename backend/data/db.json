@@ -58,13 +58,6 @@
   ],
   "hospitals": [
     {
-      "id": "h1",
-      "name": "Medpark Hospital Mohali",
-      "location": "Phase 8, Mohali, PB",
-      "beds": "500+",
-      "contact": "+91 98765-43210"
-    },
-    {
       "id": "h2",
       "name": "Medpark City Center",
       "location": "Sector 17, Chandigarh",
@@ -129,6 +122,15 @@
       "phone": "9814538354",
       "message": "Want to book a appointment.",
       "submittedAt": "2026-07-21T03:08:28.803Z"
+    },
+    {
+      "id": "1784704889063",
+      "name": "vishal prajajpati",
+      "email": "test@gmail.com",
+      "subject": "3445",
+      "phone": "7018005506",
+      "message": "qwerty",
+      "submittedAt": "2026-07-22T07:21:29.063Z"
     }
   ]
 }

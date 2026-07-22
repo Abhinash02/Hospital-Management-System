@@ -152,8 +152,8 @@ export default function HMSIntegrationAnimation() {
                 strokeWidth="1.5"
                 initial={{ opacity: 0.6, scale: 0.8 }}
                 animate={{ 
-                  r: [45, 120, 45],
-                  opacity: [0.5, 0, 0.5]
+                  scale: [1, 2.5, 1],
+                  opacity: [0.6, 0, 0.6]
                 }}
                 transition={{
                   duration: 4,

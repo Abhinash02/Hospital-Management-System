@@ -46,6 +46,7 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/book-appointment" element={<UserBookAppointment />} />
               <Route path="/dashboard/book-appointment" element={<UserBookAppointment />} />
               <Route path="/dashboard/my-appointments" element={<UserMyAppointments />} />
               <Route path="/superadmin" element={<SuperAdminDashboard />} />

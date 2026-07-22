@@ -301,7 +301,7 @@ export default function CentreOfExcellence() {
                         <span className="text-lg font-extrabold text-medical-blue">{center.stats.surgeries}</span>
                       </div>
                       <Link
-                        to="/book-appointment"
+                        to="/contact"
                         className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white bg-medical-blue px-4 py-2.5 rounded-xl hover:bg-medical-dark transition shadow-md shadow-medical-blue/20"
                       >
                         Book <ArrowRight className="w-3.5 h-3.5" />
@@ -360,7 +360,7 @@ export default function CentreOfExcellence() {
                   <p className="text-xs text-medical-blue mt-1 font-bold">Success Rate: {activeModalVideo.stats.success}</p>
                 </div>
                 <Link
-                  to="/book-appointment"
+                  to="/contact"
                   onClick={() => setActiveModalVideo(null)}
                   className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-medical-blue hover:bg-medical-dark text-white font-bold text-sm transition shadow-lg shadow-medical-blue/20"
                 >

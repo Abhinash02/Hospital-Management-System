@@ -2,17 +2,17 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import API_URL from '../config/api';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Send, 
-  Clock, 
-  MessageSquare, 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Send,
+  Clock,
+  MessageSquare,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
   CheckCircle2,
   Headphones
 } from 'lucide-react';
@@ -54,7 +54,7 @@ export default function Contact() {
     if (!form.email.trim()) validation.email = 'Email is required';
     else if (!EMAIL_REGEX.test(form.email)) validation.email = 'Enter a valid email address';
     if (!form.message.trim()) validation.message = 'Message is required';
-    
+
     if (form.phone && form.phone.trim()) {
       const cleanedPhone = form.phone.replace(/\D/g, '');
       if (cleanedPhone.length !== 10) {
@@ -119,7 +119,7 @@ export default function Contact() {
           playsInline
           className="absolute inset-0 w-full h-full object-cover filter brightness-[0.7] scale-105"
         />
-        
+
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/35 z-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40 z-10" />
 
@@ -178,7 +178,7 @@ export default function Contact() {
       {/* Main Grid Section */}
       <div className="max-w-7xl mx-auto py-12 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Left Column: Contact Cards & Info (Mobile Friendly 12 cols, Desktop 5 cols) */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -214,7 +214,7 @@ export default function Contact() {
                   <div>
                     <h4 className="text-sm font-bold text-medical-dark">24/7 Helpline</h4>
                     <a href="tel:+919876769966" className="text-xs font-semibold text-medical-blue hover:underline mt-1 block">
-                      +91 98767 69966
+                      +91 9876769966
                     </a>
                     <span className="text-[10px] text-gray-500">Emergency & Ambulance Line</span>
                   </div>
@@ -279,11 +279,10 @@ export default function Contact() {
                     name="name"
                     value={form.name}
                     onChange={handleChange}
-                    className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${
-                      errors.name 
-                        ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200' 
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${errors.name
+                        ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200'
                         : 'border-gray-200 bg-slate-50 focus:border-medical-blue focus:ring-2 focus:ring-medical-blue/20'
-                    }`}
+                      }`}
                     placeholder="Your Full Name"
                   />
                   {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
@@ -296,11 +295,10 @@ export default function Contact() {
                     name="email"
                     value={form.email}
                     onChange={handleChange}
-                    className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${
-                      errors.email 
-                        ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200' 
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${errors.email
+                        ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200'
                         : 'border-gray-200 bg-slate-50 focus:border-medical-blue focus:ring-2 focus:ring-medical-blue/20'
-                    }`}
+                      }`}
                     placeholder="you@example.com"
                   />
                   {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
@@ -319,11 +317,10 @@ export default function Contact() {
                     maxLength={10}
                     value={form.phone}
                     onChange={handleChange}
-                    className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${
-                      errors.phone 
-                        ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200' 
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${errors.phone
+                        ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200'
                         : 'border-gray-200 bg-slate-50 focus:border-medical-blue focus:ring-2 focus:ring-medical-blue/20'
-                    }`}
+                      }`}
                     placeholder="10-digit mobile number"
                   />
                   {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
@@ -349,11 +346,10 @@ export default function Contact() {
                   value={form.message}
                   onChange={handleChange}
                   rows="5"
-                  className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${
-                    errors.message 
-                      ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200' 
+                  className={`w-full rounded-2xl border px-4 py-3 text-sm text-gray-900 outline-none transition ${errors.message
+                      ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200'
                       : 'border-gray-200 bg-slate-50 focus:border-medical-blue focus:ring-2 focus:ring-medical-blue/20'
-                  }`}
+                    }`}
                   placeholder="How can our clinical team assist you today?"
                 />
                 {errors.message && <p className="mt-1 text-xs text-red-500">{errors.message}</p>}

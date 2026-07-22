@@ -5,8 +5,8 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-medical-dark text-white pt-16 pb-8 border-t-4 border-medical-blue">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-medical-dark text-white pt-5 pb-4 border-t-4 border-medical-blue">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-6">
         
         {/* Brand & Summary Header Banner */}
         <motion.div
@@ -14,7 +14,7 @@ export default function Footer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-12 pb-8 border-b border-gray-700/80"
+          className="mb-5 pb-3 border-b border-gray-700/80"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-medical-blue font-black text-xl shadow-md">
@@ -102,9 +102,9 @@ export default function Footer() {
         </div>
         
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-gray-700/80 text-center md:flex md:justify-between md:items-center text-xs md:text-sm text-gray-400">
+        <div className="pt-3 border-t border-gray-700/80 text-center md:flex md:justify-between md:items-center text-xs md:text-sm text-gray-400">
           <p>&copy; {currentYear} Medpark Hospital. All Rights Reserved.</p>
-          <div className="flex justify-center space-x-6 mt-4 md:mt-0">
+          <div className="flex justify-center space-x-6 mt-2 md:mt-0">
             <Link to="/contact" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="/contact" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
