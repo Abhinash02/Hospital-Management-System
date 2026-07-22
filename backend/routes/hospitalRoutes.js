@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.get('/', getHospitals);
 router.get('/:id', getHospitalById);
-router.post('/', authMiddleware, roleMiddleware(['superadmin', 'admin']), createHospital);
-router.put('/:id', authMiddleware, roleMiddleware(['superadmin', 'admin']), updateHospital);
-router.delete('/:id', authMiddleware, roleMiddleware(['superadmin', 'admin']), deleteHospital);
+router.post('/', authMiddleware, roleMiddleware(['superadmin']), createHospital);
+router.put('/:id', authMiddleware, roleMiddleware(['superadmin']), updateHospital);
+router.delete('/:id', authMiddleware, roleMiddleware(['superadmin']), deleteHospital);
 
 module.exports = router;

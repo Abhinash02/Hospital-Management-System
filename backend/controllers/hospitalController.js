@@ -13,42 +13,50 @@ const getHospitalById = (req, res) => {
 };
 
 const createHospital = (req, res) => {
-  const { name, location, beds, contact, adminName, adminEmail, adminPassword } = req.body;
+  const { name, location, icu, careType, specialty, beds, contact, videoUrl, adminName, adminEmail, adminPassword } = req.body;
   if (!name || !location) {
     return res.status(400).json({ message: 'Hospital name and location are required' });
   }
 
+  if (!adminEmail || !adminPassword) {
+    return res.status(400).json({ message: 'Hospital Admin Email and Password are required for login credentials' });
+  }
+
   const db = readDB();
+
+  if (db.users.find(u => u.email === adminEmail)) {
+    return res.status(400).json({ message: 'An account already exists with this Admin Email' });
+  }
+
   const hospitalId = Date.now().toString();
 
   const newHospital = {
     id: hospitalId,
     name,
     location,
-    beds: beds || 'N/A',
-    contact: contact || '',
+    icu: icu || '24/7 ICU',
+    careType: careType || 'Advanced Care',
+    specialty: specialty || 'Super Specialty',
+    beds: beds || '300+',
+    contact: contact || '+91 91225-56789',
+    videoUrl: videoUrl || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    email: adminEmail,
     createdAt: new Date().toISOString()
   };
 
   db.hospitals.push(newHospital);
 
-  // If Admin credentials are specified for this hospital, create an Admin account
-  let createdAdmin = null;
-  if (adminEmail && adminPassword) {
-    const existingUser = db.users.find(u => u.email === adminEmail);
-    if (!existingUser) {
-      createdAdmin = {
-        id: (Date.now() + 1).toString(),
-        name: adminName || `${name} Admin`,
-        email: adminEmail,
-        password: adminPassword,
-        role: 'admin',
-        hospital: name,
-        hospitalId: hospitalId
-      };
-      db.users.push(createdAdmin);
-    }
-  }
+  // Create dedicated Hospital Admin login credentials using hospital email as ID
+  const createdAdmin = {
+    id: (Date.now() + 1).toString(),
+    name: adminName || `${name} Admin`,
+    email: adminEmail,
+    password: adminPassword,
+    role: 'admin',
+    hospital: name,
+    hospitalId: hospitalId
+  };
+  db.users.push(createdAdmin);
 
   writeDB(db);
   res.status(201).json({ hospital: newHospital, admin: createdAdmin });

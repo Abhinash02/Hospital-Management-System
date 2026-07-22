@@ -30,7 +30,7 @@ export default function AdminManageHospitals() {
     const userData = localStorage.getItem('user');
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      if (parsedUser.role !== 'admin' && parsedUser.role !== 'superadmin') {
+      if (parsedUser.role !== 'superadmin') {
         navigate('/');
       } else {
         setUser(parsedUser);
@@ -56,7 +56,19 @@ export default function AdminManageHospitals() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', location: '', beds: '', contact: '', adminName: '', adminEmail: '', adminPassword: '' });
+    setFormData({ 
+      name: '', 
+      location: '', 
+      icu: '24/7 ICU',
+      careType: 'Advanced Care',
+      specialty: 'Super Specialty',
+      beds: '300+', 
+      contact: '+91 91225-56789',
+      videoUrl: '',
+      adminName: '', 
+      adminEmail: '', 
+      adminPassword: '' 
+    });
     setEditingHospital(null);
   };
 
@@ -72,12 +84,16 @@ export default function AdminManageHospitals() {
   const handleEdit = (hospital) => {
     setEditingHospital(hospital);
     setFormData({ 
-      name: hospital.name, 
-      location: hospital.location, 
-      beds: hospital.beds, 
-      contact: hospital.contact || '',
+      name: hospital.name || '', 
+      location: hospital.location || '', 
+      icu: hospital.icu || '24/7 ICU',
+      careType: hospital.careType || 'Advanced Care',
+      specialty: hospital.specialty || 'Super Specialty',
+      beds: hospital.beds || '300+', 
+      contact: hospital.contact || '+91 91225-56789',
+      videoUrl: hospital.videoUrl || '',
       adminName: '',
-      adminEmail: '',
+      adminEmail: hospital.email || '',
       adminPassword: ''
     });
     setShowForm(true);
@@ -217,7 +233,7 @@ export default function AdminManageHospitals() {
 
             {!editingHospital && (
               <div className="pt-2 border-t border-gray-200">
-                <p className="text-xs font-bold text-medical-dark uppercase tracking-wider mb-2">Optional: Assign Hospital Admin Account</p>
+                <p className="text-xs font-bold text-medical-dark uppercase tracking-wider mb-2">Mandatory: Set Hospital Admin Login Credentials</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Name</label>
@@ -231,23 +247,25 @@ export default function AdminManageHospitals() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Login Email</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Login Email *</label>
                     <input
                       type="email"
                       name="adminEmail"
                       value={formData.adminEmail}
                       onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                      required={!editingHospital}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
                       placeholder="admin.mohali@medpark.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Login Password</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Admin Login Password *</label>
                     <input
                       type="text"
                       name="adminPassword"
                       value={formData.adminPassword}
                       onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
+                      required={!editingHospital}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
                       placeholder="Set Admin Password (e.g. 123456)"
                     />
@@ -257,8 +275,8 @@ export default function AdminManageHospitals() {
             )}
 
             <div className="flex justify-end pt-2">
-              <button type="submit" className="bg-medical-blue hover:bg-medical-dark text-white font-bold py-2.5 px-6 rounded-md transition-colors text-sm">
-                {editingHospital ? 'Update Hospital' : 'Save Hospital & Admin'}
+              <button type="submit" className="bg-medical-blue hover:bg-medical-dark text-white font-bold py-2.5 px-6 rounded-md transition-colors text-sm cursor-pointer shadow-md">
+                {editingHospital ? 'Update Hospital' : 'Save Hospital & Admin Credentials'}
               </button>
             </div>
           </motion.form>

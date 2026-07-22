@@ -7,7 +7,6 @@ const ROLE_TABS = {
     { name: 'Appointments', to: '/superadmin/appointments' }
   ],
   admin: [
-    { name: 'Manage Hospitals', to: '/admin/manage-hospitals' },
     { name: 'Appointments', to: '/admin/appointments' }
   ],
   user: [
