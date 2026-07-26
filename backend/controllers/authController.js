@@ -1,355 +1,202 @@
-// const jwt = require('jsonwebtoken');
-// const { readDB, writeDB } = require('../models');
-
-// const login = (req, res) => {
-//   const { email, password } = req.body;
-//   const db = readDB();
-
-//   const user = db.users.find(u => u.email === email && u.password === password);
-//   if (!user) {
-//     return res.status(401).json({ message: 'Invalid credentials' });
-//   }
-
-//   const token = jwt.sign(
-//     { id: user.id, role: user.role, name: user.name, mobile: user.mobile, hospitalId: user.hospitalId },
-//     process.env.JWT_SECRET || 'secret123',
-//     { expiresIn: '1d' }
-//   );
-
-//   res.json({
-//     message: 'Login successful',
-//     token,
-//     user: {
-//       id: user.id,
-//       name: user.name,
-//       email: user.email,
-//       mobile: user.mobile || '',
-//       role: user.role,
-//       hospitalId: user.hospitalId
-//     }
-//   });
-// };
-
-// const register = (req, res) => {
-//   const { name, email, mobile, password } = req.body;
-//   const db = readDB();
-
-//   if (db.users.find(u => u.email === email)) {
-//     return res.status(400).json({ message: 'User already exists with this email' });
-//   }
-
-//   // Server-side mobile number validation (exactly 10 digits)
-//   if (!mobile || !/^\d{10}$/.test(mobile.toString().trim())) {
-//     return res.status(400).json({ message: 'Mobile number must be exactly 10 digits' });
-//   }
-
-//   const newUser = {
-//     id: Date.now().toString(),
-//     name,
-//     email,
-//     mobile: mobile.toString().trim(),
-//     password, 
-//     role: 'user'
-//   };
-
-//   db.users.push(newUser);
-//   writeDB(db);
-
-//   const token = jwt.sign(
-//     { id: newUser.id, role: newUser.role, name: newUser.name, mobile: newUser.mobile },
-//     process.env.JWT_SECRET || 'secret123',
-//     { expiresIn: '1d' }
-//   );
-
-//   res.status(201).json({
-//     message: 'Registration successful',
-//     token,
-//     user: {
-//       id: newUser.id,
-//       name: newUser.name,
-//       email: newUser.email,
-//       mobile: newUser.mobile,
-//       role: newUser.role
-//     }
-//   });
-// };
-
-// const getAdmins = (req, res) => {
-//   const db = readDB();
-//   const admins = db.users.filter(u => u.role === 'admin');
-//   res.json(admins);
-// };
-
-// const createAdmin = (req, res) => {
-//   const { name, email, mobile, hospital } = req.body;
-//   const db = readDB();
-
-//   if (!name || !email) {
-//     return res.status(400).json({ message: 'Name and email are required' });
-//   }
-
-//   if (db.users.find(u => u.email === email)) {
-//     return res.status(400).json({ message: 'User already exists' });
-//   }
-
-//   const newAdmin = {
-//     id: Date.now().toString(),
-//     name,
-//     email,
-//     mobile: mobile || '',
-//     password: '123',
-//     role: 'admin',
-//     hospital: hospital || 'Unassigned',
-//     hospitalId: ''
-//   };
-
-//   db.users.push(newAdmin);
-//   writeDB(db);
-
-//   res.status(201).json(newAdmin);
-// };
-
-// const updateAdmin = (req, res) => {
-//   const { id } = req.params;
-//   const { name, email, mobile, hospital } = req.body;
-//   const db = readDB();
-
-//   const adminIndex = db.users.findIndex(u => u.id === id && u.role === 'admin');
-//   if (adminIndex === -1) {
-//     return res.status(404).json({ message: 'Admin not found' });
-//   }
-
-//   if (!name || !email) {
-//     return res.status(400).json({ message: 'Name and email are required' });
-//   }
-
-//   const existingEmailUser = db.users.find(u => u.email === email && u.id !== id);
-//   if (existingEmailUser) {
-//     return res.status(400).json({ message: 'Another user already uses this email' });
-//   }
-
-//   db.users[adminIndex] = {
-//     ...db.users[adminIndex],
-//     name,
-//     email,
-//     mobile: mobile !== undefined ? mobile : db.users[adminIndex].mobile || '',
-//     hospital: hospital || db.users[adminIndex].hospital || 'Unassigned'
-//   };
-
-//   writeDB(db);
-//   res.json(db.users[adminIndex]);
-// };
-
-// const deleteAdmin = (req, res) => {
-//   const { id } = req.params;
-//   const db = readDB();
-//   const adminIndex = db.users.findIndex(u => u.id === id && u.role === 'admin');
-//   if (adminIndex === -1) {
-//     return res.status(404).json({ message: 'Admin not found' });
-//   }
-
-//   const removedAdmin = db.users.splice(adminIndex, 1)[0];
-//   writeDB(db);
-//   res.json({ message: 'Admin deleted', admin: removedAdmin });
-// };
-
-// module.exports = { login, register, getAdmins, createAdmin, updateAdmin, deleteAdmin };
-
-
-
 const jwt = require('jsonwebtoken');
-const { readDB, writeDB } = require('../models');
+const Users = require('../db/users');
+const { sendPasswordResetOtp } = require('../services/emailService');
 
-const login = (req, res) => {
+const SECRET = process.env.JWT_SECRET || 'secret123';
+
+const publicUser = (u) => ({
+  id: u.id, name: u.name || '', email: u.email, mobile: u.mobile || '',
+  role: u.role, hospital: u.hospital || '', hospitalId: u.hospitalId || '',
+  active: u.active !== false
+});
+
+const signToken = (u) =>
+  jwt.sign(
+    { id: u.id, role: u.role, name: u.name, mobile: u.mobile, hospitalId: u.hospitalId },
+    SECRET,
+    { expiresIn: '1d' }
+  );
+
+const login = async (req, res) => {
   try {
-    console.log('LOGIN BODY:', req.body);
-
-    const email = (req.body.email || '').trim().toLowerCase();
+    const email = (req.body.email || '').trim();
     const password = (req.body.password || '').toString().trim();
-    const db = readDB();
 
-    console.log('LOGIN EMAIL:', email);
-    console.log('LOGIN PASSWORD:', password);
-    console.log('DB USERS COUNT:', (db.users || []).length);
-
-    const user = (db.users || []).find(
-      u =>
-        (u.email || '').trim().toLowerCase() === email &&
-        (u.password || '').toString().trim() === password
-    );
-
-    console.log('MATCHED USER:', user || null);
-
-    if (!user) {
+    const user = await Users.findByEmail(email);
+    if (!user || (user.password || '').toString().trim() !== password) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-
-    const token = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-        name: user.name,
-        mobile: user.mobile,
-        hospitalId: user.hospitalId
-      },
-      process.env.JWT_SECRET || 'secret123',
-      { expiresIn: '1d' }
-    );
+    if (user.active === false) {
+      return res.status(403).json({ message: 'Your account is inactive. Please contact support.' });
+    }
 
     return res.json({
       message: 'Login successful',
-      token,
-      user: {
-        id: user.id,
-        name: user.name || '',
-        email: user.email,
-        mobile: user.mobile || '',
-        role: user.role,
-        hospitalId: user.hospitalId || ''
-      }
+      token: signToken(user),
+      user: publicUser(user)
     });
   } catch (error) {
-    console.error('LOGIN CONTROLLER ERROR:', error);
-    return res.status(500).json({ message: 'Server error during login' });
+    console.error('LOGIN ERROR:', error);
+    const netIssue = /fetch failed|timeout|ENOTFOUND|ECONNREFUSED|UND_ERR/i.test(String(error && error.message));
+    return res.status(netIssue ? 503 : 500).json({
+      message: netIssue
+        ? 'Could not reach the server. Please check your internet connection and try again.'
+        : 'Server error during login'
+    });
   }
 };
 
-const register = (req, res) => {
+const register = async (req, res) => {
   try {
     const { name, email, mobile, password } = req.body;
-    const db = readDB();
-
-    if ((db.users || []).find(u => (u.email || '').trim().toLowerCase() === (email || '').trim().toLowerCase())) {
+    if (await Users.findByEmail(email)) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
-
     if (!mobile || !/^\d{10}$/.test(mobile.toString().trim())) {
       return res.status(400).json({ message: 'Mobile number must be exactly 10 digits' });
     }
-
-    const newUser = {
+    const newUser = await Users.insert({
       id: Date.now().toString(),
       name,
-      email: email.trim(),
+      email: (email || '').trim(),
       mobile: mobile.toString().trim(),
-      password: password.toString().trim(),
-      role: 'user'
-    };
-
-    db.users.push(newUser);
-    writeDB(db);
-
-    const token = jwt.sign(
-      { id: newUser.id, role: newUser.role, name: newUser.name, mobile: newUser.mobile },
-      process.env.JWT_SECRET || 'secret123',
-      { expiresIn: '1d' }
-    );
-
-    return res.status(201).json({
-      message: 'Registration successful',
-      token,
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        mobile: newUser.mobile,
-        role: newUser.role
-      }
+      password: (password || '').toString().trim(),
+      role: 'user',
+      active: true
     });
+    return res.status(201).json({ message: 'Registration successful', token: signToken(newUser), user: publicUser(newUser) });
   } catch (error) {
-    console.error('REGISTER CONTROLLER ERROR:', error);
+    console.error('REGISTER ERROR:', error);
     return res.status(500).json({ message: 'Server error during registration' });
   }
 };
 
-const getAdmins = (req, res) => {
-  const db = readDB();
-  return res.json((db.users || []).filter(u => u.role === 'admin'));
+const getAdmins = async (req, res) => {
+  const admins = await Users.all({ role: 'admin' });
+  return res.json(admins.map(publicUser));
 };
 
-const createAdmin = (req, res) => {
+const createAdmin = async (req, res) => {
   const { name, email, mobile, hospital } = req.body;
-  const db = readDB();
-
-  if (!name || !email) {
-    return res.status(400).json({ message: 'Name and email are required' });
-  }
-
-  if ((db.users || []).find(u => (u.email || '').trim().toLowerCase() === (email || '').trim().toLowerCase())) {
-    return res.status(400).json({ message: 'User already exists' });
-  }
-
-  const newAdmin = {
-    id: Date.now().toString(),
-    name,
-    email,
-    mobile: mobile || '',
-    password: '123',
-    role: 'admin',
-    hospital: hospital || 'Unassigned',
-    hospitalId: ''
-  };
-
-  db.users.push(newAdmin);
-  writeDB(db);
-
-  return res.status(201).json(newAdmin);
+  if (!name || !email) return res.status(400).json({ message: 'Name and email are required' });
+  if (await Users.findByEmail(email)) return res.status(400).json({ message: 'User already exists' });
+  const admin = await Users.insert({
+    id: Date.now().toString(), name, email, mobile: mobile || '', password: '123',
+    role: 'admin', hospital: hospital || 'Unassigned', hospitalId: '', active: true
+  });
+  return res.status(201).json(publicUser(admin));
 };
 
-const updateAdmin = (req, res) => {
+const updateAdmin = async (req, res) => {
   const { id } = req.params;
   const { name, email, mobile, hospital } = req.body;
-  const db = readDB();
-
-  const adminIndex = (db.users || []).findIndex(u => u.id === id && u.role === 'admin');
-  if (adminIndex === -1) {
-    return res.status(404).json({ message: 'Admin not found' });
-  }
-
-  if (!name || !email) {
-    return res.status(400).json({ message: 'Name and email are required' });
-  }
-
-  const existingEmailUser = (db.users || []).find(
-    u => (u.email || '').trim().toLowerCase() === email.trim().toLowerCase() && u.id !== id
-  );
-
-  if (existingEmailUser) {
-    return res.status(400).json({ message: 'Another user already uses this email' });
-  }
-
-  db.users[adminIndex] = {
-    ...db.users[adminIndex],
-    name,
-    email,
-    mobile: mobile !== undefined ? mobile : db.users[adminIndex].mobile || '',
-    hospital: hospital || db.users[adminIndex].hospital || 'Unassigned'
-  };
-
-  writeDB(db);
-  return res.json(db.users[adminIndex]);
+  const admin = await Users.findById(id);
+  if (!admin || admin.role !== 'admin') return res.status(404).json({ message: 'Admin not found' });
+  if (!name || !email) return res.status(400).json({ message: 'Name and email are required' });
+  const dupe = await Users.findByEmail(email);
+  if (dupe && dupe.id !== id) return res.status(400).json({ message: 'Another user already uses this email' });
+  const updated = await Users.update(id, { name, email, mobile: mobile !== undefined ? mobile : admin.mobile, hospital: hospital || admin.hospital });
+  return res.json(publicUser(updated));
 };
 
-const deleteAdmin = (req, res) => {
+const deleteAdmin = async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
+  const admin = await Users.findById(id);
+  if (!admin || admin.role !== 'admin') return res.status(404).json({ message: 'Admin not found' });
+  await Users.remove(id);
+  return res.json({ message: 'Admin deleted', admin: publicUser(admin) });
+};
 
-  const adminIndex = (db.users || []).findIndex(u => u.id === id && u.role === 'admin');
-  if (adminIndex === -1) {
-    return res.status(404).json({ message: 'Admin not found' });
+// ── Users management (superadmin) ──
+const getAllUsers = async (req, res) => {
+  const users = await Users.all();
+  return res.json(users.map(publicUser));
+};
+
+const createUser = async (req, res) => {
+  const { name, email, mobile, password, role, hospital } = req.body || {};
+  if (!name || !email || !password || !role) return res.status(400).json({ message: 'Name, email, password and role are required' });
+  if (!['user', 'admin', 'superadmin'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
+  if (await Users.findByEmail(email)) return res.status(400).json({ message: 'A user already exists with this email' });
+  const user = await Users.insert({
+    id: Date.now().toString(), name, email: email.trim(), mobile: mobile || '',
+    password: String(password), role, hospital: hospital || '', hospitalId: '', active: true
+  });
+  return res.status(201).json(publicUser(user));
+};
+
+const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, mobile, role, hospital, password, active } = req.body || {};
+  const user = await Users.findById(id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (email) {
+    const dupe = await Users.findByEmail(email);
+    if (dupe && dupe.id !== id) return res.status(400).json({ message: 'Another user already uses this email' });
   }
+  const patch = {};
+  if (name !== undefined) patch.name = name;
+  if (email !== undefined) patch.email = email.trim();
+  if (mobile !== undefined) patch.mobile = mobile;
+  if (role !== undefined && ['user', 'admin', 'superadmin'].includes(role)) patch.role = role;
+  if (hospital !== undefined) patch.hospital = hospital;
+  if (password) patch.password = String(password);
+  if (active !== undefined) patch.active = !!active;
+  const updated = await Users.update(id, patch);
+  return res.json(publicUser(updated));
+};
 
-  const removedAdmin = db.users.splice(adminIndex, 1)[0];
-  writeDB(db);
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  const user = await Users.findById(id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (user.role === 'superadmin') return res.status(400).json({ message: 'Super admin accounts cannot be deleted' });
+  await Users.remove(id);
+  return res.json({ message: 'User deleted', user: publicUser(user) });
+};
 
-  return res.json({ message: 'Admin deleted', admin: removedAdmin });
+// POST /api/auth/forgot-password
+const forgotPassword = async (req, res) => {
+  try {
+    const email = (req.body.email || '').trim();
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const user = await Users.findByEmail(email);
+    if (user) {
+      const otp = String(Math.floor(1000 + Math.random() * 9000));
+      await Users.update(user.id, { resetOtp: otp, resetOtpExpires: Date.now() + 10 * 60 * 1000 });
+      sendPasswordResetOtp({ to: user.email, contactName: user.name, otp })
+        .catch((e) => console.error('[auth] reset OTP email failed:', e));
+    }
+    return res.json({ message: 'If that email is registered, a reset code has been sent.' });
+  } catch (error) {
+    console.error('FORGOT PASSWORD ERROR:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// POST /api/auth/reset-password
+const resetPassword = async (req, res) => {
+  try {
+    const email = (req.body.email || '').trim();
+    const otp = (req.body.otp || '').toString().trim();
+    const newPassword = (req.body.newPassword || '').toString();
+    if (!email || !otp || !newPassword) return res.status(400).json({ message: 'Email, code and new password are required' });
+    if (newPassword.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
+
+    const user = await Users.findByEmail(email);
+    if (!user || !user.resetOtp) return res.status(400).json({ message: 'Invalid or expired code' });
+    if (Date.now() > (user.resetOtpExpires || 0)) return res.status(400).json({ message: 'Code expired. Please request a new one.' });
+    if (String(user.resetOtp) !== otp) return res.status(400).json({ message: 'Incorrect code' });
+
+    await Users.update(user.id, { password: newPassword, resetOtp: null, resetOtpExpires: null });
+    return res.json({ message: 'Password reset successful. You can now log in.' });
+  } catch (error) {
+    console.error('RESET PASSWORD ERROR:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
 };
 
 module.exports = {
-  login,
-  register,
-  getAdmins,
-  createAdmin,
-  updateAdmin,
-  deleteAdmin
+  login, register, getAdmins, createAdmin, updateAdmin, deleteAdmin,
+  getAllUsers, createUser, updateUser, deleteUser, forgotPassword, resetPassword
 };

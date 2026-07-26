@@ -1,7 +1,7 @@
 // import { useEffect, useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { motion } from 'framer-motion';
-// import API_URL from '../config/api';
+// import API_URL from '../../config/api';
 // import { 
 //   Calendar, 
 //   Clock, 
@@ -16,7 +16,7 @@
 //   Download
 // } from 'lucide-react';
 // import toast from 'react-hot-toast';
-// import DashboardLayout from '../components/DashboardLayout';
+// import DashboardLayout from '../../components/DashboardLayout';
 
 // export default function UserDashboard() {
 //   const [user, setUser] = useState(null);
@@ -399,7 +399,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import API_URL from '../config/api';
+import API_URL from '../../config/api';
 import {
   Calendar,
   PhoneCall,
@@ -408,7 +408,7 @@ import {
   Send
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import DashboardLayout from '../components/DashboardLayout';
+import DashboardLayout from '../../components/DashboardLayout';
 
 export default function UserDashboard() {
   const [user, setUser] = useState(null);

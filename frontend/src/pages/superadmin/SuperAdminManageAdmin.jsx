@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, RefreshCw, Edit3, Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
-import API_URL from '../config/api';
-import DashboardLayout from '../components/DashboardLayout';
-import DashboardTabs from '../components/DashboardTabs';
+import API_URL from '../../config/api';
+import DashboardLayout from '../../components/DashboardLayout';
+import DashboardTabs from '../../components/DashboardTabs';
 
 export default function SuperAdminManageAdmin() {
   const [user, setUser] = useState(null);

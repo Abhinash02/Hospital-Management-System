@@ -26,6 +26,8 @@
 
 
 
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 
@@ -35,13 +37,34 @@ const appointmentRoutes = require('./routes/appointmentRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const callRoutes = require('./routes/callRoutes');
+const demoRoutes = require('./routes/demoRoutes');
+const scheduleRoutes = require('./routes/scheduleRoutes');
+const demoFeedbackRoutes = require('./routes/demoFeedbackRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const registrationRoutes = require('./routes/registrationRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
+// FRONTEND_URL may be a comma-separated list (e.g. local + deployed). Requests with no
+// Origin header (curl, server-to-server, some mobile webviews) are allowed too.
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(null, false);
+  },
   credentials: true
 }));
+
+// Stripe webhook needs the RAW body for signature verification, so it must be
+// registered BEFORE express.json() (which would otherwise consume the body).
+const { webhook: stripeWebhook } = require('./controllers/paymentController');
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -52,6 +75,12 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
 app.use('/api/calls', callRoutes);
+app.use('/api/demos', demoRoutes);
+app.use('/api/schedule', scheduleRoutes);
+app.use('/api/feedback', demoFeedbackRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/registrations', registrationRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Backend is running' });

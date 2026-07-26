@@ -258,15 +258,19 @@
 
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Info, X, CalendarCheck } from 'lucide-react';
+import { Info, X, CalendarCheck, Eye, EyeOff, Mail, KeyRound, Loader2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API_URL from '../config/api';
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
+  // Login-only page. Hospital onboarding happens through the demo → registration funnel.
+  const isLogin = true;
   const [showNoticeModal, setShowNoticeModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [forgot, setForgot] = useState(null); // null | { step: 'email'|'reset', email, otp, password, sending }
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -287,6 +291,39 @@ export default function Login() {
     }
   };
 
+  // ── Forgot-password flow ──
+  const submitForgotEmail = async (e) => {
+    e.preventDefault();
+    if (!forgot.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgot.email)) return toast.error('Enter a valid email');
+    setForgot((f) => ({ ...f, sending: true }));
+    try {
+      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: forgot.email })
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.message || 'Could not send code'); setForgot((f) => ({ ...f, sending: false })); return; }
+      toast.success('If that email is registered, a code was sent 📧');
+      setForgot((f) => ({ ...f, step: 'reset', sending: false }));
+    } catch { toast.error('Network error'); setForgot((f) => ({ ...f, sending: false })); }
+  };
+
+  const submitReset = async (e) => {
+    e.preventDefault();
+    if (!/^\d{4}$/.test(forgot.otp)) return toast.error('Enter the 4-digit code');
+    if ((forgot.password || '').length < 6) return toast.error('Password must be at least 6 characters');
+    setForgot((f) => ({ ...f, sending: true }));
+    try {
+      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgot.email, otp: forgot.otp, newPassword: forgot.password })
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.message || 'Reset failed'); setForgot((f) => ({ ...f, sending: false })); return; }
+      toast.success('Password reset! Please log in.');
+      setForgot(null);
+    } catch { toast.error('Network error'); setForgot((f) => ({ ...f, sending: false })); }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -300,6 +337,7 @@ export default function Login() {
 
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
 
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
@@ -333,6 +371,8 @@ export default function Login() {
     } catch (err) {
       console.error('LOGIN ERROR:', err);
       toast.error(err.message || 'An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -423,37 +463,114 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-medical-blue focus:border-medical-blue outline-none transition-all bg-gray-50 focus:bg-white"
-                placeholder="••••••••"
-              />
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-semibold text-gray-700">Password</label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => setForgot({ step: 'email', email: formData.email, otp: '', password: '', sending: false })}
+                    className="text-xs font-semibold text-medical-blue hover:text-medical-dark cursor-pointer"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 pr-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-medical-blue focus:border-medical-blue outline-none transition-all bg-gray-50 focus:bg-white"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-medical-blue hover:bg-medical-dark text-white font-bold py-3.5 rounded-lg shadow-md transition-colors mt-2 cursor-pointer"
+              disabled={loading}
+              className="w-full bg-medical-blue hover:bg-medical-dark text-white font-bold py-3.5 rounded-lg shadow-md transition-colors mt-2 cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {isLogin ? 'Sign In' : 'Register'}
+              {loading ? (<><Loader2 className="w-5 h-5 animate-spin" /> Signing in…</>) : (isLogin ? 'Sign In' : 'Register')}
             </button>
           </form>
 
           <div className="mt-8 text-center text-sm text-gray-600 border-t pt-6">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="font-bold text-medical-blue hover:text-medical-dark transition-colors focus:outline-none cursor-pointer"
+            Want to onboard your hospital?{' '}
+            <Link
+              to="/#book-demo"
+              className="font-bold text-medical-blue hover:text-medical-dark transition-colors cursor-pointer"
             >
-              {isLogin ? 'Register here' : 'Login here'}
-            </button>
+              Book a demo
+            </Link>
           </div>
         </div>
       </div>
+
+      {/* Forgot-password modal */}
+      <AnimatePresence>
+        {forgot && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setForgot(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md bg-white rounded-3xl p-7 shadow-2xl border border-gray-100"
+            >
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-medical-blue flex items-center justify-center"><KeyRound className="w-5 h-5" /></div>
+                <div>
+                  <h3 className="font-bold text-lg text-medical-dark">Reset your password</h3>
+                  <p className="text-xs text-gray-500">{forgot.step === 'email' ? "We'll email you a 4-digit code" : `Enter the code sent to ${forgot.email}`}</p>
+                </div>
+                <button onClick={() => setForgot(null)} className="ml-auto p-1.5 rounded-full text-gray-400 hover:bg-gray-100 cursor-pointer"><X className="w-5 h-5" /></button>
+              </div>
+
+              {forgot.step === 'email' ? (
+                <form onSubmit={submitForgotEmail} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Email address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input type="email" value={forgot.email} onChange={(e) => setForgot((f) => ({ ...f, email: e.target.value }))} placeholder="you@example.com" className="w-full pl-9 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-medical-blue outline-none bg-gray-50 focus:bg-white" />
+                    </div>
+                  </div>
+                  <button type="submit" disabled={forgot.sending} className="w-full bg-medical-blue hover:bg-medical-dark text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer">
+                    {forgot.sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</> : 'Send code'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={submitReset} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">4-digit code</label>
+                    <input inputMode="numeric" maxLength={4} value={forgot.otp} onChange={(e) => setForgot((f) => ({ ...f, otp: e.target.value.replace(/\D/g, '').slice(0, 4) }))} placeholder="1234" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-medical-blue outline-none bg-gray-50 focus:bg-white tracking-[0.5em] text-center text-lg font-bold" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">New password</label>
+                    <input type="password" value={forgot.password} onChange={(e) => setForgot((f) => ({ ...f, password: e.target.value }))} placeholder="At least 6 characters" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-medical-blue outline-none bg-gray-50 focus:bg-white" />
+                  </div>
+                  <button type="submit" disabled={forgot.sending} className="w-full bg-medical-blue hover:bg-medical-dark text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer">
+                    {forgot.sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Resetting…</> : 'Reset password'}
+                  </button>
+                  <button type="button" onClick={() => setForgot((f) => ({ ...f, step: 'email' }))} className="w-full text-sm text-gray-500 hover:text-medical-blue flex items-center justify-center gap-1 cursor-pointer"><ArrowLeft className="w-3.5 h-3.5" /> Use a different email / resend</button>
+                </form>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showNoticeModal && (

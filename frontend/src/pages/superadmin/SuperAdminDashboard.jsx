@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import API_URL from '../config/api';
-import { 
+import API_URL from '../../config/api';
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
-import { Search, RefreshCw, Edit3, Trash2, Plus, Bell, ShieldCheck, Server, AlertCircle } from 'lucide-react';
+import { Search, RefreshCw, Edit3, Trash2, Plus, Bell, ShieldCheck, Server, AlertCircle, CalendarDays, CalendarClock, CheckCircle2, ClipboardList, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
-import DashboardLayout from '../components/DashboardLayout';
+import DashboardLayout from '../../components/DashboardLayout';
 
 // Dummy Data for Graphs
 const systemGrowthData = [
@@ -48,8 +48,23 @@ export default function SuperAdminDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', hospital: '' });
-  
+  const [demoCounts, setDemoCounts] = useState({ total: 0, requested: 0, scheduled: 0, completed: 0, cancelled: 0 });
+
   const navigate = useNavigate();
+
+  const fetchDemoStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/demos`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return; // demo storage may not be configured yet — fail quietly
+      const data = await res.json();
+      if (data.counts) setDemoCounts(data.counts);
+    } catch (err) {
+      // non-fatal for the overview
+    }
+  };
 
   const fetchAdmins = async () => {
     try {
@@ -107,6 +122,7 @@ export default function SuperAdminDashboard() {
         fetchAdmins();
         fetchHospitals();
         loadAppointments();
+        fetchDemoStats();
       }
     } else {
       navigate('/login');
@@ -333,6 +349,43 @@ export default function SuperAdminDashboard() {
             </div>
           );
         })}
+      </div>
+
+      {/* Demo Funnel Snapshot */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="text-medical-blue" size={20} />
+            <h3 className="font-bold text-gray-900 text-base">Demo Funnel Snapshot</h3>
+          </div>
+          <Link
+            to="/superadmin/demos"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-medical-blue hover:text-medical-dark"
+          >
+            Manage demos <ArrowRight size={15} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { title: 'Total Bookings', value: demoCounts.total, icon: CalendarDays, bg: 'bg-blue-100', text: 'text-blue-600' },
+            { title: 'Scheduled', value: demoCounts.scheduled, icon: CalendarClock, bg: 'bg-indigo-100', text: 'text-indigo-600' },
+            { title: 'Completed', value: demoCounts.completed, icon: CheckCircle2, bg: 'bg-green-100', text: 'text-green-600' },
+            { title: 'Total Appointments', value: appointments.length, icon: ClipboardList, bg: 'bg-purple-100', text: 'text-purple-600' }
+          ].map((c) => {
+            const Icon = c.icon;
+            return (
+              <div key={c.title} className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-slate-50 border border-gray-200/70">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{c.title}</p>
+                  <p className="text-2xl font-extrabold text-medical-dark mt-1">{c.value}</p>
+                </div>
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${c.bg} ${c.text}`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* System Audit Log Activity Feed */}

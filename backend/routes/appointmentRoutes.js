@@ -37,6 +37,7 @@ const express = require('express');
 const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
 const {
   bookAppointment,
+  bookPublicAppointment,
   getAppointments,
   updateAppointmentStatus,
   updateAppointment,
@@ -44,6 +45,9 @@ const {
 } = require('../controllers/appointmentController');
 
 const router = express.Router();
+
+// Public — book an appointment from the marketing site (no login)
+router.post('/public', bookPublicAppointment);
 
 router.post('/', authMiddleware, bookAppointment);
 router.get('/', authMiddleware, getAppointments);

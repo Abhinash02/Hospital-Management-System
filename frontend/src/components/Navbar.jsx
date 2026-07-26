@@ -322,6 +322,7 @@ export default function Navbar() {
     if (user.role === 'superadmin') {
       return [
         { name: 'Overview', to: '/superadmin' },
+        { name: 'Demo Bookings', to: '/superadmin/demos' },
         { name: 'Manage Admin', to: '/superadmin/manage-admin' },
         { name: 'Manage Hospitals', to: '/superadmin/manage-hospitals' },
         { name: 'Appointments', to: '/superadmin/appointments' }
@@ -332,10 +333,8 @@ export default function Navbar() {
   return [
     { name: 'Overview', to: '/admin' },
     { name: 'Appointments', to: '/admin/appointments' },
-    { name: 'Hospital', to: '/admin/manage-hospitals' },
     { name: 'Timings', to: '/admin/timings' },
     { name: 'Feedback', to: '/admin/feedback' },
-    { name: 'Calls', to: '/admin/calls' },
     { name: 'Transcriptions', to: '/admin/transcriptions' }
   ];
 }
@@ -351,13 +350,30 @@ export default function Navbar() {
   const showDashboardNav = !!user && isDashboardRoute();
   const logoRedirect = user ? getDashboardLink() : '/';
 
+  // Single-page portal: every public link scrolls to a section on the home page.
   const publicLinks = [
-    { name: 'Home', to: '/' },
-    { name: 'Centre of Excellence', to: '/excellence' },
-    { name: 'Doctors', to: '/doctors' },
-    { name: 'Hospitals', to: '/hospitals' },
-    { name: 'Contact', to: '/contact' }
+    { name: 'Features', id: 'features' },
+    { name: 'Specialties', id: 'specialties' },
+    { name: 'How It Works', id: 'how-it-works' },
+    { name: 'About', id: 'about' },
+    { name: 'FAQ', id: 'faq' },
+    { name: 'Book Appointment', route: '/appointment' },
+    { name: 'Book a Demo', id: 'book-demo', cta: true }
   ];
+
+  const handleNav = (link) => {
+    setIsOpen(false);
+    if (link.route) { navigate(link.route); return; }
+    if (location.pathname === '/') {
+      const el = document.getElementById(link.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        window.history.replaceState(null, '', `/#${link.id}`);
+      }
+    } else {
+      navigate(`/#${link.id}`);
+    }
+  };
 
   return (
     <header className="bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100">
@@ -379,19 +395,25 @@ export default function Navbar() {
 
           <nav className="hidden md:flex items-center gap-5 lg:gap-6 font-medium text-sm text-gray-700">
             {!showDashboardNav &&
-              publicLinks.map((link) => (
-                <NavLink
-                  key={link.name}
-                  to={link.to}
-                  className={({ isActive }) =>
-                    `transition-colors ${
-                      isActive ? 'text-medical-blue font-semibold' : 'hover:text-medical-blue'
-                    }`
-                  }
-                >
-                  {link.name}
-                </NavLink>
-              ))}
+              publicLinks.map((link) =>
+                link.cta ? (
+                  <button
+                    key={link.name}
+                    onClick={() => handleNav(link)}
+                    className="inline-flex items-center justify-center px-5 py-2 rounded-full text-sm font-semibold text-white bg-medical-blue hover:bg-medical-dark transition-colors whitespace-nowrap"
+                  >
+                    {link.name}
+                  </button>
+                ) : (
+                  <button
+                    key={link.name}
+                    onClick={() => handleNav(link)}
+                    className="transition-colors hover:text-medical-blue cursor-pointer"
+                  >
+                    {link.name}
+                  </button>
+                )
+              )}
 
             {showDashboardNav ? (
               <>
@@ -459,7 +481,7 @@ export default function Navbar() {
                 to="/login"
                 className="ml-4 inline-flex items-center justify-center px-5 lg:px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-medical-dark hover:bg-medical-blue transition-colors whitespace-nowrap"
               >
-                Login / Register →
+                Login →
               </Link>
             )}
           </nav>
@@ -557,20 +579,17 @@ export default function Navbar() {
               ) : (
                 <>
                   {publicLinks.map((link) => (
-                    <NavLink
+                    <button
                       key={link.name}
-                      to={link.to}
-                      onClick={() => setIsOpen(false)}
-                      className={({ isActive }) =>
-                        `block px-3 py-3 rounded-md text-base font-medium transition ${
-                          isActive
-                            ? 'text-medical-blue bg-gray-100'
-                            : 'text-gray-700 hover:text-medical-blue hover:bg-gray-50'
-                        }`
-                      }
+                      onClick={() => handleNav(link)}
+                      className={`block w-full text-left px-3 py-3 rounded-md text-base font-medium transition ${
+                        link.cta
+                          ? 'text-white bg-medical-blue hover:bg-medical-dark'
+                          : 'text-gray-700 hover:text-medical-blue hover:bg-gray-50'
+                      }`}
                     >
                       {link.name}
-                    </NavLink>
+                    </button>
                   ))}
 
                   <Link
@@ -578,7 +597,7 @@ export default function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className="mt-4 block w-full text-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-medical-dark hover:bg-medical-blue transition-colors"
                   >
-                    Login / Register
+                    Login
                   </Link>
                 </>
               )}

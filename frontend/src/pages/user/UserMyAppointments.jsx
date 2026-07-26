@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API_URL from '../config/api';
+import API_URL from '../../config/api';
 import toast from 'react-hot-toast';
-import DashboardLayout from '../components/DashboardLayout';
-import DashboardTabs from '../components/DashboardTabs';
+import DashboardLayout from '../../components/DashboardLayout';
+import DashboardTabs from '../../components/DashboardTabs';
 
 export default function UserMyAppointments() {
   const [user, setUser] = useState(null);

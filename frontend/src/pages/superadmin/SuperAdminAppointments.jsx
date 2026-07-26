@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
-import API_URL from '../config/api';
-import DashboardLayout from '../components/DashboardLayout';
-import DashboardTabs from '../components/DashboardTabs';
+import API_URL from '../../config/api';
+import DashboardLayout from '../../components/DashboardLayout';
+import DashboardTabs from '../../components/DashboardTabs';
 
 const appointmentStatusOptions = ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
 

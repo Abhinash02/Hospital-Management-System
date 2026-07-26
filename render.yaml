@@ -1,0 +1,41 @@
+# Render blueprint for the Pet Hospital Portal backend.
+# In Render: New + → Blueprint → point at this repo. Set the `sync: false` secrets
+# in the dashboard (they are never committed).
+services:
+  - type: web
+    name: pet-hospital-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_SECRET
+        generateValue: true
+      # Comma-separate multiple allowed frontends, e.g. https://app.example.com,http://localhost:5173
+      - key: FRONTEND_URL
+        sync: false
+      - key: APP_BASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: DEMO_PRICE_AMOUNT
+        value: "4900"
+      - key: DEMO_PRICE_CURRENCY
+        value: usd

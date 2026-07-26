@@ -2,6 +2,9 @@ import { NavLink } from 'react-router-dom';
 
 const ROLE_TABS = {
   superadmin: [
+    { name: 'Demo Bookings', to: '/superadmin/demos' },
+    { name: 'Registrations', to: '/superadmin/registrations' },
+    { name: 'Users', to: '/superadmin/users' },
     { name: 'Manage Admin', to: '/superadmin/manage-admin' },
     { name: 'Manage Hospitals', to: '/superadmin/manage-hospitals' },
     { name: 'Appointments', to: '/superadmin/appointments' }
