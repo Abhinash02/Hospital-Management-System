@@ -20,7 +20,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
 import Pagination from '../../components/Pagination';
 
-const PER_PAGE = 10;
+const PER_PAGE = 6;
 
 const STATUS_STYLES = {
   requested: 'bg-amber-100 text-amber-700',

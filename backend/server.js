@@ -25,7 +25,6 @@
 // });
 
 
-
 require('dotenv').config();
 
 const express = require('express');
@@ -35,7 +34,7 @@ const authRoutes = require('./routes/authRoutes');
 const hospitalRoutes = require('./routes/hospitalRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const contactRoutes = require('./routes/contactRoutes');
-const feedbackRoutes = require('./routes/feedbackRoutes');
+// ❌ removed: const feedbackRoutes = require('./routes/feedbackRoutes');
 const callRoutes = require('./routes/callRoutes');
 const demoRoutes = require('./routes/demoRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
@@ -46,11 +45,9 @@ const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
-// FRONTEND_URL may be a comma-separated list (e.g. local + deployed). Requests with no
-// Origin header (curl, server-to-server, some mobile webviews) are allowed too.
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
-  .map((s) => s.trim())
+  .map(s => s.trim())
   .filter(Boolean);
 
 app.use(cors({
@@ -61,32 +58,57 @@ app.use(cors({
   credentials: true
 }));
 
-// Stripe webhook needs the RAW body for signature verification, so it must be
-// registered BEFORE express.json() (which would otherwise consume the body).
+// Stripe webhook
 const { webhook: stripeWebhook } = require('./controllers/paymentController');
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ----- REQUEST LOGGER (see every request in the terminal) -----
+app.use((req, res, next) => {
+  console.log(`➡️ ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// ----- EXISTING ROUTES -----
 app.use('/api/auth', authRoutes);
 app.use('/api/hospitals', hospitalRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/contacts', contactRoutes);
-app.use('/api/feedbacks', feedbackRoutes);
+// ❌ removed: app.use('/api/feedbacks', feedbackRoutes);
 app.use('/api/calls', callRoutes);
 app.use('/api/demos', demoRoutes);
 app.use('/api/schedule', scheduleRoutes);
-app.use('/api/feedback', demoFeedbackRoutes);
+app.use('/api/feedback', demoFeedbackRoutes);     // public feedback (reviews)
 app.use('/api/payments', paymentRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/uploads', uploadRoutes);
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Backend is running' });
-});
+// ========== APPOINTMENT FEEDBACK (patient follow‑up) ==========
+const { authMiddleware, roleMiddleware } = require('./middleware/authMiddleware');
+const {
+  getFeedbacks,
+  createFeedback,
+  updateFeedback,
+  deleteFeedback
+} = require('./controllers/appointmentFeedbackController');
+
+const appointmentFeedbackRouter = express.Router();
+appointmentFeedbackRouter.get('/', authMiddleware, getFeedbacks);
+appointmentFeedbackRouter.post('/', authMiddleware, roleMiddleware(['admin', 'superadmin']), createFeedback);
+appointmentFeedbackRouter.put('/:id', authMiddleware, roleMiddleware(['admin', 'superadmin']), updateFeedback);
+appointmentFeedbackRouter.delete('/:id', authMiddleware, roleMiddleware(['superadmin']), deleteFeedback);
+
+app.use('/api/appointment-feedbacks', appointmentFeedbackRouter);
+
+// ----- HEALTH CHECK -----
+app.get('/ping', (req, res) => res.json({ pong: true }));
+
+app.get('/', (req, res) => res.json({ message: 'Backend is running' }));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ /api/appointment-feedbacks ready`);
 });

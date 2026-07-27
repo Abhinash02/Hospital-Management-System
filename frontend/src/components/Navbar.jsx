@@ -334,7 +334,7 @@ export default function Navbar() {
     { name: 'Overview', to: '/admin' },
     { name: 'Appointments', to: '/admin/appointments' },
     { name: 'Timings', to: '/admin/timings' },
-    { name: 'Feedback', to: '/admin/feedback' },
+    { name: 'Feedback', to: '/admin/appointment-feedback' },
     { name: 'Transcriptions', to: '/admin/transcriptions' }
   ];
 }
@@ -357,6 +357,7 @@ export default function Navbar() {
     { name: 'How It Works', id: 'how-it-works' },
     { name: 'About', id: 'about' },
     { name: 'FAQ', id: 'faq' },
+    { name: 'Feedback', id: 'feedback' },            // ← new
     { name: 'Book Appointment', route: '/appointment' },
     { name: 'Book a Demo', id: 'book-demo', cta: true }
   ];

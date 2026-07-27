@@ -4,6 +4,7 @@ import HMSIntegrationAnimation from '../components/HMSIntegrationAnimation';
 import HomePracticeAreas from '../components/HomePracticeAreas';
 import HomeHealthPackages from '../components/HomeHealthPackages';
 import HomeTestimonials from '../components/HomeTestimonials';
+import PublicFeedbackForm from '../components/PublicFeedbackForm';
 import HomeFAQ from '../components/HomeFAQ';
 
 export default function Home() {
@@ -28,9 +29,13 @@ export default function Home() {
 
       {/* 6. Patient Reviews */}
       <HomeTestimonials />
+   
 
       {/* 7. Frequently Asked Questions */}
       <HomeFAQ />
+
+      {/* 7. Patient Reviews */}
+      <PublicFeedbackForm />
     </div>
   );
 }

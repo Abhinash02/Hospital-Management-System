@@ -32,6 +32,8 @@ import BookDemoSection from '../../components/portal/BookDemoSection';
 import HMSIntegrationAnimation from '../../components/HMSIntegrationAnimation';
 import PortalSpecialties from '../../components/portal/PortalSpecialties';
 import PortalFAQ from '../../components/portal/PortalFAQ';
+import PublicFeedbackForm from '../../components/portal/PublicFeedbackForm';
+
 
 /* ── Images (pet / veterinary, same remote-image approach as the existing Home) ── */
 const IMG = {
@@ -248,6 +250,7 @@ export default function PortalHome() {
       <PortalSpecialties />
       <HMSIntegrationAnimation />
 
+
       {/* ───────────── HOW IT WORKS ───────────── */}
       <section id="how-it-works" className="scroll-mt-20 py-20 bg-white border-t border-gray-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
@@ -385,6 +388,10 @@ export default function PortalHome() {
 
       {/* FAQ — last section, just above the footer */}
       <PortalFAQ />
+
+      <section id="feedback" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+        <PublicFeedbackForm />
+      </section>
     </div>
   );
 }
