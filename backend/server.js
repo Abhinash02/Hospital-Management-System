@@ -25,6 +25,95 @@
 // });
 
 
+// require('dotenv').config();
+
+// const express = require('express');
+// const cors = require('cors');
+
+// const authRoutes = require('./routes/authRoutes');
+// const hospitalRoutes = require('./routes/hospitalRoutes');
+// const appointmentRoutes = require('./routes/appointmentRoutes');
+// const contactRoutes = require('./routes/contactRoutes');
+// // ❌ removed: const feedbackRoutes = require('./routes/feedbackRoutes');
+// const callRoutes = require('./routes/callRoutes');
+// const demoRoutes = require('./routes/demoRoutes');
+// const scheduleRoutes = require('./routes/scheduleRoutes');
+// const demoFeedbackRoutes = require('./routes/demoFeedbackRoutes');
+// const paymentRoutes = require('./routes/paymentRoutes');
+// const registrationRoutes = require('./routes/registrationRoutes');
+// const uploadRoutes = require('./routes/uploadRoutes');
+
+// const app = express();
+
+// const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+//   .split(',')
+//   .map(s => s.trim())
+//   .filter(Boolean);
+
+// app.use(cors({
+//   origin: (origin, cb) => {
+//     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+//     return cb(null, false);
+//   },
+//   credentials: true
+// }));
+
+// // Stripe webhook
+// const { webhook: stripeWebhook } = require('./controllers/paymentController');
+// app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
+
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+
+// // ----- REQUEST LOGGER (see every request in the terminal) -----
+// app.use((req, res, next) => {
+//   console.log(`➡️ ${req.method} ${req.originalUrl}`);
+//   next();
+// });
+
+// // ----- EXISTING ROUTES -----
+// app.use('/api/auth', authRoutes);
+// app.use('/api/hospitals', hospitalRoutes);
+// app.use('/api/appointments', appointmentRoutes);
+// app.use('/api/contacts', contactRoutes);
+// // ❌ removed: app.use('/api/feedbacks', feedbackRoutes);
+// app.use('/api/calls', callRoutes);
+// app.use('/api/demos', demoRoutes);
+// app.use('/api/schedule', scheduleRoutes);
+// app.use('/api/feedback', demoFeedbackRoutes);     // public feedback (reviews)
+// app.use('/api/payments', paymentRoutes);
+// app.use('/api/registrations', registrationRoutes);
+// app.use('/api/uploads', uploadRoutes);
+
+// // ========== APPOINTMENT FEEDBACK (patient follow‑up) ==========
+// const { authMiddleware, roleMiddleware } = require('./middleware/authMiddleware');
+// const {
+//   getFeedbacks,
+//   createFeedback,
+//   updateFeedback,
+//   deleteFeedback
+// } = require('./controllers/appointmentFeedbackController');
+
+// const appointmentFeedbackRouter = express.Router();
+// appointmentFeedbackRouter.get('/', authMiddleware, getFeedbacks);
+// appointmentFeedbackRouter.post('/', authMiddleware, roleMiddleware(['admin', 'superadmin']), createFeedback);
+// appointmentFeedbackRouter.put('/:id', authMiddleware, roleMiddleware(['admin', 'superadmin']), updateFeedback);
+// appointmentFeedbackRouter.delete('/:id', authMiddleware, roleMiddleware(['superadmin']), deleteFeedback);
+
+// app.use('/api/appointment-feedbacks', appointmentFeedbackRouter);
+
+// // ----- HEALTH CHECK -----
+// app.get('/ping', (req, res) => res.json({ pong: true }));
+
+// app.get('/', (req, res) => res.json({ message: 'Backend is running' }));
+
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`✅ Server running on port ${PORT}`);
+//   console.log(`✅ /api/appointment-feedbacks ready`);
+// });
+
+
 require('dotenv').config();
 
 const express = require('express');
@@ -45,33 +134,48 @@ const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+// ─── CORS Configuration ──────────────────────────────────────
+// Read FRONTEND_URL from environment (comma‑separated, e.g. "http://localhost:5173,https://your-site.vercel.app")
+const rawFrontendUrls = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = rawFrontendUrls
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
 
+console.log('🚀 Allowed CORS origins:', allowedOrigins);
+
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return cb(null, true);
+
+    console.log(`🔍 Incoming origin: "${origin}"`);
+
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ Origin allowed');
+      return cb(null, true);
+    }
+
+    console.warn('❌ Origin not allowed:', origin);
     return cb(null, false);
   },
   credentials: true
 }));
 
-// Stripe webhook
+// Stripe webhook – must come before express.json()
 const { webhook: stripeWebhook } = require('./controllers/paymentController');
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ----- REQUEST LOGGER (see every request in the terminal) -----
+// ─── Request logger ──────────────────────────────────────────
 app.use((req, res, next) => {
   console.log(`➡️ ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// ----- EXISTING ROUTES -----
+// ─── Routes ───────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/hospitals', hospitalRoutes);
 app.use('/api/appointments', appointmentRoutes);
@@ -85,7 +189,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/uploads', uploadRoutes);
 
-// ========== APPOINTMENT FEEDBACK (patient follow‑up) ==========
+// ─── Appointment feedback routes ─────────────────────────────
 const { authMiddleware, roleMiddleware } = require('./middleware/authMiddleware');
 const {
   getFeedbacks,
@@ -102,11 +206,17 @@ appointmentFeedbackRouter.delete('/:id', authMiddleware, roleMiddleware(['supera
 
 app.use('/api/appointment-feedbacks', appointmentFeedbackRouter);
 
-// ----- HEALTH CHECK -----
+// ─── Health checks ────────────────────────────────────────────
 app.get('/ping', (req, res) => res.json({ pong: true }));
-
 app.get('/', (req, res) => res.json({ message: 'Backend is running' }));
 
+// ─── Global error handler ─────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('❌ Global error:', err);
+  res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
+});
+
+// ─── Start server ────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
