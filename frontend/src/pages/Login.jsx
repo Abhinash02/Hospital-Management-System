@@ -324,57 +324,118 @@ export default function Login() {
     } catch { toast.error('Network error'); setForgot((f) => ({ ...f, sending: false })); }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!formData.email || !formData.password || (!isLogin && (!formData.name || !formData.mobile))) {
+  //     return toast.error('Please fill in all required fields');
+  //   }
+
+  //   if (!isLogin && !/^\d{10}$/.test(formData.mobile)) {
+  //     return toast.error('Mobile number must be exactly 10 digits');
+  //   }
+
+  //   const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+
+  //   setLoading(true);
+  //   try {
+  //     const res = await fetch(`${API_URL}${endpoint}`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(formData)
+  //     });
+
+  //     const rawText = await res.text();
+  //     console.log('LOGIN STATUS:', res.status);
+  //     console.log('LOGIN RAW RESPONSE:', rawText);
+
+  //     let data = {};
+  //     try {
+  //       data = rawText ? JSON.parse(rawText) : {};
+  //     } catch (parseError) {
+  //       throw new Error(`Server returned non-JSON response: ${rawText.slice(0, 200)}`);
+  //     }
+
+  //     if (!res.ok) {
+  //       return toast.error(data.message || 'Authentication failed');
+  //     }
+
+  //     localStorage.setItem('token', data.token);
+  //     localStorage.setItem('user', JSON.stringify(data.user));
+  //     toast.success(isLogin ? 'Successfully logged in!' : 'Successfully registered!');
+  //     window.dispatchEvent(new Event('storage'));
+
+  //     if (data.user.role === 'superadmin') navigate('/superadmin');
+  //     else if (data.user.role === 'admin') navigate('/admin');
+  //     else navigate('/dashboard');
+  //   } catch (err) {
+  //     console.error('LOGIN ERROR:', err);
+  //     toast.error(err.message || 'An error occurred. Please try again.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formData.email || !formData.password || (!isLogin && (!formData.name || !formData.mobile))) {
-      return toast.error('Please fill in all required fields');
-    }
+  if (!formData.email || !formData.password || (!isLogin && (!formData.name || !formData.mobile))) {
+    return toast.error('Please fill in all required fields');
+  }
 
-    if (!isLogin && !/^\d{10}$/.test(formData.mobile)) {
-      return toast.error('Mobile number must be exactly 10 digits');
-    }
+  if (!isLogin && !/^\d{10}$/.test(formData.mobile)) {
+    return toast.error('Mobile number must be exactly 10 digits');
+  }
 
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+  const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
 
-    setLoading(true);
+  setLoading(true);
+  try {
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+
+    // Get the raw response text first
+    // Get the raw response text first
+const rawText = await res.text();
+console.log('LOGIN STATUS:', res.status);
+console.log('LOGIN CONTENT-TYPE:', res.headers.get('content-type'));
+
+// Only log in development, and never log the full response
+if (import.meta.env.DEV) {
+  // Log only status and structure, not the actual token
+  console.log('Login response received:', { status: res.status, ok: res.ok });
+}
+
+    // Parse the response
+    let data = {};
     try {
-      const res = await fetch(`${API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const rawText = await res.text();
-      console.log('LOGIN STATUS:', res.status);
-      console.log('LOGIN RAW RESPONSE:', rawText);
-
-      let data = {};
-      try {
-        data = rawText ? JSON.parse(rawText) : {};
-      } catch (parseError) {
-        throw new Error(`Server returned non-JSON response: ${rawText.slice(0, 200)}`);
-      }
-
-      if (!res.ok) {
-        return toast.error(data.message || 'Authentication failed');
-      }
-
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      toast.success(isLogin ? 'Successfully logged in!' : 'Successfully registered!');
-      window.dispatchEvent(new Event('storage'));
-
-      if (data.user.role === 'superadmin') navigate('/superadmin');
-      else if (data.user.role === 'admin') navigate('/admin');
-      else navigate('/dashboard');
-    } catch (err) {
-      console.error('LOGIN ERROR:', err);
-      toast.error(err.message || 'An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch (parseError) {
+      throw new Error(`Server returned non-JSON response: ${rawText.slice(0, 200)}`);
     }
-  };
+
+    if (!res.ok) {
+      return toast.error(data.message || 'Authentication failed');
+    }
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    toast.success(isLogin ? 'Successfully logged in!' : 'Successfully registered!');
+    window.dispatchEvent(new Event('storage'));
+
+    if (data.user.role === 'superadmin') navigate('/superadmin');
+    else if (data.user.role === 'admin') navigate('/admin');
+    else navigate('/dashboard');
+  } catch (err) {
+    console.error('LOGIN ERROR:', err);
+    toast.error(err.message || 'An error occurred. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-[calc(100vh-80px)] bg-white">
