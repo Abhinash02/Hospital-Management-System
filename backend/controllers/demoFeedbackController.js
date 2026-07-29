@@ -83,7 +83,12 @@ const submitFeedback = async (req, res) => {
     });
     return res.json({ message: 'Redirecting to payment', interested: true, checkoutUrl: session.url });
   } catch (e) {
-    console.error('[feedback] stripe session error:', e);
+    console.error('[feedback] stripe session error:', {
+      message: e.message,
+      stack: e.stack,
+      type: e.type,
+      code: e.code
+    });
     return res.status(500).json({ message: 'Could not start payment' });
   }
 };
