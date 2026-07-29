@@ -1,5 +1,9 @@
+# Root gitignore
 node_modules/
+backend/
+*.log
 .env
+.env.local
 .DS_Store
+.vscode/
 dist/
-build/

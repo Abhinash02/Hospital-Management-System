@@ -33,6 +33,29 @@ export default function BookAppointmentPage() {
     setErrors((p) => ({ ...p, [k]: undefined }));
   };
 
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  useEffect(() => {
+    if (!form.date) return;
+    (async () => {
+      setLoadingSlots(true);
+      try {
+        const res = await fetch(`${API_URL}/api/appointments/booked-slots?date=${form.date}&hospitalId=${form.hospitalId || ''}`);
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.bookedSlots)) {
+          setBookedSlots(data.bookedSlots);
+        } else {
+          setBookedSlots([]);
+        }
+      } catch (e) {
+        console.error('Could not fetch booked slots:', e);
+      } finally {
+        setLoadingSlots(false);
+      }
+    })();
+  }, [form.date, form.hospitalId]);
+
   const validate = () => {
     const e = {};
     if (!form.patientName.trim()) e.patientName = 'Patient name is required';
@@ -40,6 +63,7 @@ export default function BookAppointmentPage() {
     else if (!/^\d{10}$/.test(form.patientPhone.trim())) e.patientPhone = 'Enter a valid 10-digit mobile number';
     if (!form.hospitalId) e.hospitalId = 'Please select a hospital';
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Enter a valid email';
+    if (form.time && bookedSlots.includes(form.time)) e.time = 'That slot is already booked. Please choose an available time.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -116,8 +140,43 @@ export default function BookAppointmentPage() {
           <Field icon={Calendar} label="Preferred date">
             <input type="date" value={form.date} onChange={update('date')} className="portal-input" />
           </Field>
-          <Field icon={Clock} label="Preferred time">
-            <input type="time" value={form.time} onChange={update('time')} className="portal-input" />
+
+          <Field icon={Clock} label="Preferred time *" error={errors.time}>
+            <input type="time" value={form.time} onChange={update('time')} className="portal-input mb-2" />
+            {form.date && (
+              <div className="mt-2">
+                <span className="text-xs font-semibold text-gray-500 block mb-1.5">
+                  Available Slots {loadingSlots ? '(checking Google Calendar...)' : ''}:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'].map((slot) => {
+                    const isBooked = bookedSlots.includes(slot);
+                    const isSelected = form.time === slot;
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        disabled={isBooked}
+                        onClick={() => {
+                          setForm((f) => ({ ...f, time: slot }));
+                          setErrors((p) => ({ ...p, time: undefined }));
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
+                          isBooked
+                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through'
+                            : isSelected
+                            ? 'bg-medical-blue text-white border-medical-blue shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-medical-blue'
+                        }`}
+                        title={isBooked ? 'Slot not available (Already booked)' : 'Click to select slot'}
+                      >
+                        {slot} {isBooked ? '(Booked)' : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </Field>
         </div>
 

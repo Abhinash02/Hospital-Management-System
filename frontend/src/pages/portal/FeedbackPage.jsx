@@ -47,12 +47,16 @@ export default function FeedbackPage() {
       const data = await res.json();
       if (!res.ok) return toast.error(data.message || 'Could not submit feedback');
 
+      if (data.interested && (data.redirectUrl || data.plansUrl)) {
+        navigate(data.redirectUrl || data.plansUrl || `/pricing?token=${token}`);
+        return;
+      }
       if (data.interested && data.checkoutUrl) {
-        window.location.href = data.checkoutUrl; // → Stripe Checkout
+        window.location.href = data.checkoutUrl;
         return;
       }
       if (data.interested && data.registerUrl) {
-        navigate(data.registerUrl); // dev fallback (no Stripe)
+        navigate(data.registerUrl);
         return;
       }
       setDone(true);

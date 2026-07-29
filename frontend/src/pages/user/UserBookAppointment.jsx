@@ -47,6 +47,29 @@ export default function UserBookAppointment() {
     }
   };
 
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  useEffect(() => {
+    if (!formData.date) return;
+    (async () => {
+      setLoadingSlots(true);
+      try {
+        const res = await fetch(`${API_URL}/api/appointments/booked-slots?date=${formData.date}&hospitalId=${formData.hospitalId || ''}`);
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.bookedSlots)) {
+          setBookedSlots(data.bookedSlots);
+        } else {
+          setBookedSlots([]);
+        }
+      } catch (e) {
+        console.error('Could not fetch booked slots:', e);
+      } finally {
+        setLoadingSlots(false);
+      }
+    })();
+  }, [formData.date, formData.hospitalId]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -55,6 +78,9 @@ export default function UserBookAppointment() {
     e.preventDefault();
     if (!formData.hospitalId || !formData.date || !formData.time || !formData.patientName || !formData.patientPhone) {
       return toast.error('Please fill all required fields');
+    }
+    if (bookedSlots.includes(formData.time)) {
+      return toast.error('That slot is already booked. Please pick an available time.');
     }
 
     try {
@@ -113,6 +139,38 @@ export default function UserBookAppointment() {
                 <input type="time" name="time" value={formData.time} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-blue" />
               </div>
             </div>
+
+            {formData.date && (
+              <div className="mt-1">
+                <span className="text-xs font-semibold text-gray-500 block mb-1">
+                  Available Slots {loadingSlots ? '(checking Google Calendar...)' : ''}:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'].map((slot) => {
+                    const isBooked = bookedSlots.includes(slot);
+                    const isSelected = formData.time === slot;
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        disabled={isBooked}
+                        onClick={() => setFormData((f) => ({ ...f, time: slot }))}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
+                          isBooked
+                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through'
+                            : isSelected
+                            ? 'bg-medical-blue text-white border-medical-blue shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-medical-blue'
+                        }`}
+                        title={isBooked ? 'Slot not available (Already booked)' : 'Click to select slot'}
+                      >
+                        {slot} {isBooked ? '(Booked)' : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Patient Name <span className="text-red-500">*</span></label>
