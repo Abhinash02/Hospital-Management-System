@@ -1,47 +1,19 @@
-// import { Outlet } from 'react-router-dom';
-// import { Building2 } from 'lucide-react';
-// import DashboardLayout from '../../components/DashboardLayout';
-
-// export default function AdminLayout() {
-//   const user = JSON.parse(localStorage.getItem('user')) || {};
-//   const hospitalName = user?.hospital || user?.name || 'Your Hospital';
-
-//   return (
-//     <DashboardLayout
-//       title={user?.role === 'admin' ? `Welcome, ${hospitalName}` : 'Admin Dashboard'}
-//       subtitle="Manage appointments, timings, calls, transcriptions, and patient feedback."
-//       user={user}
-//     >
-//       {user?.role === 'admin' && (
-//         <div className="mb-6 flex items-center gap-3 bg-gradient-to-r from-medical-dark to-medical-blue text-white rounded-2xl px-5 sm:px-6 py-4 shadow-lg">
-//           <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-//             <Building2 className="w-6 h-6" />
-//           </div>
-//           <div className="min-w-0">
-//             <p className="text-[11px] uppercase tracking-wider text-blue-100 font-semibold">Hospital</p>
-//             <p className="text-lg sm:text-xl font-extrabold truncate">{hospitalName}</p>
-//           </div>
-//         </div>
-//       )}
-//       <Outlet />
-//     </DashboardLayout>
-//   );
-// }
-
 
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
-import API_URL from '../../config/api';   // adjust path if needed
+import API_URL from '../../config/api';
 
 export default function AdminLayout() {
+  const location = useLocation();
   const user = JSON.parse(localStorage.getItem('user')) || {};
   const hospitalName = user?.hospital || user?.name || 'Your Hospital';
   const [hospital, setHospital] = useState(null);
 
+  const isOverview = location.pathname === '/admin' || location.pathname === '/admin/';
+
   useEffect(() => {
-    // Only fetch if the user has a hospitalId and we don't already have the hospital data
     if (user?.hospitalId) {
       fetch(`${API_URL}/api/hospitals/${user.hospitalId}`)
         .then((res) => res.json())
@@ -49,34 +21,45 @@ export default function AdminLayout() {
         .catch(() => { /* non-blocking */ });
     }
   }, [user?.hospitalId]);
+  const title = '';
+  const subtitle = '';
 
   return (
     <DashboardLayout
-      title={user?.role === 'admin' ? `Welcome, ${hospitalName}` : 'Admin Dashboard'}
-      subtitle="Manage appointments, timings, calls, transcriptions, and patient feedback."
+      title={title}
+      subtitle={subtitle}
       user={user}
+      showHeader={false}
     >
+      {/* Redesigned Hospital Banner matching your requested text order and layout */}
       {user?.role === 'admin' && (
-        <div className="mb-6 flex items-center gap-3 bg-gradient-to-r from-medical-dark to-medical-blue text-white rounded-2xl px-5 sm:px-6 py-4 shadow-lg">
-          {/* Hospital logo / fallback icon */}
+        <div className="mb-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-gradient-to-r from-slate-900 via-blue-950 to-blue-900 text-white rounded-3xl p-6 sm:p-8 shadow-[0_15px_35px_-10px_rgba(15,23,42,0.35)] border border-white/10 backdrop-blur-md">
           {hospital?.imageUrl ? (
             <img
               src={hospital.imageUrl}
               alt={hospitalName}
-              className="w-11 h-11 rounded-xl object-cover border-2 border-white/30 shrink-0"
+              className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20 shrink-0 shadow-md"
             />
           ) : (
-            <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-              <Building2 className="w-6 h-6" />
+            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
+              <Building2 className="w-7 h-7 text-blue-200" />
             </div>
           )}
 
-          <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-wider text-blue-100 font-semibold">Hospital</p>
-            <p className="text-lg sm:text-xl font-extrabold truncate">{hospitalName}</p>
+          <div className="min-w-0 flex-1">
+            <span className="inline-block text-[11px] font-black uppercase tracking-widest text-blue-300 bg-blue-500/20 px-3 py-1 rounded-full mb-2 border border-blue-400/30">
+              Hospital
+            </span>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Welcome, {hospitalName}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-300 mt-1 font-medium">
+              Manage appointments, timings, calls, transcriptions, and patient feedback.
+            </p>
           </div>
         </div>
       )}
+
       <Outlet />
     </DashboardLayout>
   );

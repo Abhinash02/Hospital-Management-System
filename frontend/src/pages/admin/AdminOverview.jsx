@@ -78,7 +78,7 @@ export default function AdminOverview() {
         hospitalsRes
       ] = await Promise.all([
         fetch(`${API_URL}/api/appointments`, { headers }),
-        fetch(`${API_URL}/api/feedbacks`, { headers }),
+        fetch(`${API_URL}/api/appointment-feedbacks`, { headers }),
         fetch(`${API_URL}/api/calls`, { headers }),
         fetch(`${API_URL}/api/calls/transcriptions`, { headers }),
         fetch(`${API_URL}/api/hospitals`)
