@@ -6,7 +6,7 @@ import {
   Sparkles, AlertCircle, CalendarClock 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import API_URL from '../config/api';
+import API_URL from "../../config/api";
 
 const PLANS = [
   {
