@@ -876,11 +876,10 @@ export default function SuperAdminDemos() {
 
                         <td className="py-4 px-5">
                           {b.payment ? (
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${
-                              b.payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                              b.payment.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                              'bg-rose-50 text-rose-700 border-rose-200'
-                            }`}>
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${b.payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                b.payment.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                  'bg-rose-50 text-rose-700 border-rose-200'
+                              }`}>
                               <ShieldCheck size={12} />
                               {b.payment.status}
                             </span>
@@ -907,11 +906,10 @@ export default function SuperAdminDemos() {
                           <div className="inline-block action-menu-container">
                             <button
                               onClick={() => setActiveMenuId(isMenuOpen ? null : b.id)}
-                              className={`p-2 rounded-xl border transition shadow-sm ${
-                                isMenuOpen 
-                                  ? 'bg-blue-600 text-white border-blue-600 shadow-blue-500/20' 
+                              className={`p-2 rounded-xl border transition shadow-sm ${isMenuOpen
+                                  ? 'bg-blue-600 text-white border-blue-600 shadow-blue-500/20'
                                   : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-200'
-                              }`}
+                                }`}
                               title="Actions"
                             >
                               <MoreVertical size={16} />

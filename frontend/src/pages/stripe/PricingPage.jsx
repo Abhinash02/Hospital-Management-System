@@ -117,7 +117,7 @@ export default function PricingPage() {
         const res = await fetch(`${API_URL}/api/feedback/${token}`);
         const data = await res.json();
         if (res.ok && data.booking) {
-          // ✅ Correctly set the booking info
+          // Correctly set the booking info
           setBookingInfo({
             ...data.booking,
             // Ensure email is always available
@@ -203,7 +203,7 @@ export default function PricingPage() {
       ...(authToken && { Authorization: `Bearer ${authToken}` })
     };
 
-    // ✅ Build the booking object with email
+    // Build the booking object with email
     const booking = {
       id: bookingInfo?.id || 'demo-booking',
       email: bookingInfo?.email || user?.email || 'customer@example.com',
@@ -211,7 +211,7 @@ export default function PricingPage() {
     };
 
     const body = {
-      booking,                     // ✅ Now email is included
+      booking,                    
       planKey,
       feedbackToken: token,
       isRenewal: isRenewal
