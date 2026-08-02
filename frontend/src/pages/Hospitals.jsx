@@ -715,19 +715,27 @@ export default function Hospitals() {
                       </div>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div className="mt-6 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
                       <button
                         onClick={() => setActiveVideoModal(h)}
                         className="text-xs font-bold text-medical-blue flex items-center gap-1"
                       >
                         <Video className="w-4 h-4" /> Watch Facility Video
                       </button>
-                      <Link
-                        to="/book-appointment"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-medical-blue px-5 py-2.5 rounded-xl transition"
-                      >
-                        Book Appointment <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/hospitals/${h.id}`}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-medical-blue border border-medical-blue px-4 py-2.5 rounded-xl hover:bg-medical-blue hover:text-white transition"
+                        >
+                          View Profile
+                        </Link>
+                        <Link
+                          to={`/appointment?hospitalId=${encodeURIComponent(h.id)}`}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-medical-blue px-5 py-2.5 rounded-xl transition"
+                        >
+                          Book Appointment <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -774,13 +782,22 @@ export default function Hospitals() {
                     Location: {activeVideoModal.location} • {activeVideoModal.beds}
                   </p>
                 </div>
-                <Link
-                  to="/book-appointment"
-                  onClick={() => setActiveVideoModal(null)}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-medical-blue text-white font-bold text-sm transition"
-                >
-                  Visit & Book <ArrowRight className="w-4 h-4" />
-                </Link>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <Link
+                    to={`/hospitals/${activeVideoModal.id}`}
+                    onClick={() => setActiveVideoModal(null)}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-medical-blue text-medical-blue font-bold text-sm hover:bg-medical-blue hover:text-white transition"
+                  >
+                    View Profile
+                  </Link>
+                  <Link
+                    to={`/appointment?hospitalId=${encodeURIComponent(activeVideoModal.id)}`}
+                    onClick={() => setActiveVideoModal(null)}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-medical-blue text-white font-bold text-sm transition"
+                  >
+                    Visit &amp; Book <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </motion.div>

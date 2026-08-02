@@ -417,6 +417,7 @@ import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
+import { TableSkeleton } from '../../components/Loader';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -442,7 +443,7 @@ export default function SuperAdminManageHospitals() {
     adminEmail: '',
     adminPassword: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [registrations, setRegistrations] = useState([]);
   const [matchedReg, setMatchedReg] = useState(null);
   const navigate = useNavigate();
@@ -795,9 +796,8 @@ export default function SuperAdminManageHospitals() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan="5" className="py-8 text-center text-gray-500">
-                    <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
-                    Loading hospitals...
+                  <td colSpan="5" className="p-0">
+                    <TableSkeleton rows={5} cols={5} />
                   </td>
                 </tr>
               ) : paginatedHospitals.length === 0 ? (

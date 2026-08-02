@@ -652,13 +652,44 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
-import { 
-  Search, RefreshCw, Edit3, Trash2, Plus, Bell, ShieldCheck, Server, 
-  AlertCircle, CalendarDays, CalendarClock, CheckCircle2, ClipboardList, 
-  ArrowRight, ChevronLeft, ChevronRight 
+import {
+  Search, RefreshCw, Edit3, Trash2, Plus, Bell, ShieldCheck,
+  AlertCircle, CalendarDays, CalendarClock, CheckCircle2, ClipboardList,
+  ArrowRight, ChevronLeft, ChevronRight, UserPlus, Radio, Hourglass, MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../../components/DashboardLayout';
+import Loader, { StatSkeleton, TableSkeleton } from '../../components/Loader';
+
+// How often the live counters refresh (ms). The API rate limiter allows 120 req/min.
+const LIVE_REFRESH_MS = 15000;
+
+// Counts animate from their previous value so a change is visible, not just different.
+function AnimatedCount({ value = 0 }) {
+  const [display, setDisplay] = useState(value);
+
+  useEffect(() => {
+    const from = display;
+    const to = Number(value) || 0;
+    if (from === to) return;
+
+    const steps = 18;
+    const stepMs = 900 / steps;
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      // ease-out so it decelerates into the final number
+      const progress = 1 - Math.pow(1 - i / steps, 3);
+      setDisplay(i >= steps ? to : Math.round(from + (to - from) * progress));
+      if (i >= steps) clearInterval(id);
+    }, stepMs);
+
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return <>{display.toLocaleString()}</>;
+}
 
 // Dummy Data for Graphs
 const systemGrowthData = [
@@ -705,7 +736,32 @@ export default function SuperAdminDashboard() {
   const [appointmentPage, setAppointmentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // ─── Live counters (polled) ───────────────────────────────
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [lastSynced, setLastSynced] = useState(null);
+  const [loadingAdmins, setLoadingAdmins] = useState(true);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
+
   const navigate = useNavigate();
+
+  const fetchStats = async ({ silent = false } = {}) => {
+    if (!silent) setStatsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/stats/overview`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setStats(data);
+      setLastSynced(new Date());
+    } catch {
+      // Polling is best-effort — a transient failure keeps the last known counts.
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   const fetchDemoStats = async () => {
     try {
@@ -720,6 +776,7 @@ export default function SuperAdminDashboard() {
   };
 
   const fetchAdmins = async () => {
+    setLoadingAdmins(true);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/auth/admins`, {
@@ -734,6 +791,8 @@ export default function SuperAdminDashboard() {
       }
     } catch (err) {
       toast.error('Unable to load admins.');
+    } finally {
+      setLoadingAdmins(false);
     }
   };
 
@@ -777,13 +836,31 @@ export default function SuperAdminDashboard() {
         fetchHospitals();
         loadAppointments();
         fetchDemoStats();
+        fetchStats();
       }
     } else {
       navigate('/login');
     }
   }, [navigate]);
 
+  // Poll the live counters, and refresh immediately when the tab regains focus
+  // so a superadmin returning to the dashboard never reads a stale number.
+  useEffect(() => {
+    if (!user) return;
+
+    const id = setInterval(() => fetchStats({ silent: true }), LIVE_REFRESH_MS);
+    const onFocus = () => fetchStats({ silent: true });
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('focus', onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const loadAppointments = async () => {
+    setLoadingAppointments(true);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/appointments`, {
@@ -795,6 +872,8 @@ export default function SuperAdminDashboard() {
       }
     } catch (err) {
       toast.error('Unable to load appointments.');
+    } finally {
+      setLoadingAppointments(false);
     }
   };
 
@@ -988,29 +1067,160 @@ export default function SuperAdminDashboard() {
         </button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          { title: 'Total Hospitals', value: '12', trend: '+2 this month', color: 'text-medical-blue', icon: Server },
-          { title: 'Active Admins', value: admins.length.toString(), trend: 'Updated live', color: 'text-emerald-600', icon: ShieldCheck },
-          { title: 'Total Patients', value: '11,000+', trend: '+15% growth', color: 'text-purple-600', icon: Server },
-          { title: 'System Uptime', value: '99.99%', trend: 'HL7 Network Healthy', color: 'text-blue-600', icon: Server }
-        ].map((kpi, idx) => {
-          const IconComp = kpi.icon;
-          return (
-            <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:shadow-md">
-              <div>
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{kpi.title}</h3>
-                <p className={`text-3xl font-extrabold ${kpi.color}`}>{kpi.value}</p>
-                <span className="text-xs font-bold text-gray-400 mt-1 block">{kpi.trend}</span>
-              </div>
-              <div className="p-3.5 bg-slate-50 text-gray-700 rounded-2xl border border-gray-100">
-                <IconComp size={22} />
-              </div>
-            </div>
-          );
-        })}
+      {/* ─── Live counters ─────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="inline-flex items-center gap-2">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+          </span>
+          <h2 className="text-lg font-bold text-gray-900">Live Counters</h2>
+          <span className="text-xs text-gray-400 font-medium">
+            {lastSynced ? `Synced ${lastSynced.toLocaleTimeString()}` : 'Syncing…'} · auto-refreshes every {LIVE_REFRESH_MS / 1000}s
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => fetchStats()}
+          className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold transition text-sm"
+        >
+          <Radio size={15} /> Refresh now
+        </button>
       </div>
+
+      {statsLoading && !stats ? (
+        <StatSkeleton count={4} className="mb-8" />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[
+            {
+              title: 'Total Registrations',
+              value: stats?.registrations?.total ?? 0,
+              trend: `${stats?.registrations?.pending ?? 0} pending · ${stats?.registrations?.today ?? 0} today`,
+              color: 'text-indigo-600',
+              bg: 'bg-indigo-50',
+              icon: UserPlus,
+              to: '/superadmin/registrations'
+            },
+            {
+              title: 'Total Bookings',
+              value: stats?.bookings?.total ?? appointments.length,
+              trend: `${stats?.bookings?.pending ?? 0} pending · ${stats?.bookings?.today ?? 0} today`,
+              color: 'text-medical-blue',
+              bg: 'bg-blue-50',
+              icon: ClipboardList,
+              to: '/superadmin/appointments'
+            },
+            {
+              title: 'Active Admins',
+              value: stats?.network?.admins ?? admins.length,
+              trend: `${stats?.network?.hospitals ?? hospitals.length} hospitals on the network`,
+              color: 'text-emerald-600',
+              bg: 'bg-emerald-50',
+              icon: ShieldCheck,
+              to: '/superadmin/manage-admin'
+            },
+            {
+              title: 'New Enquiries',
+              value: stats?.contacts?.new ?? 0,
+              trend: `${stats?.contacts?.total ?? 0} contact messages in total`,
+              color: 'text-amber-600',
+              bg: 'bg-amber-50',
+              icon: MessageSquare,
+              to: '/superadmin/contacts'
+            }
+          ].map((kpi) => {
+            const IconComp = kpi.icon;
+            return (
+              <Link
+                key={kpi.title}
+                to={kpi.to}
+                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:shadow-md hover:-translate-y-0.5"
+              >
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{kpi.title}</h3>
+                  <p className={`text-3xl font-extrabold ${kpi.color}`}>
+                    <AnimatedCount value={kpi.value} />
+                  </p>
+                  <span className="text-xs font-bold text-gray-400 mt-1 block">{kpi.trend}</span>
+                </div>
+                <div className={`p-3.5 rounded-2xl border border-gray-100 ${kpi.bg} ${kpi.color}`}>
+                  <IconComp size={22} />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Booking / registration status breakdown */}
+      {stats && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="text-medical-blue" size={19} />
+                <h3 className="font-bold text-gray-900">Bookings by status</h3>
+              </div>
+              <Link to="/superadmin/appointments" className="inline-flex items-center gap-1 text-sm font-semibold text-medical-blue hover:text-medical-dark">
+                View all <ArrowRight size={15} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Pending', value: stats.bookings.pending, cls: 'bg-amber-50 text-amber-700', icon: Hourglass },
+                { label: 'Confirmed', value: stats.bookings.confirmed, cls: 'bg-blue-50 text-blue-700', icon: CalendarClock },
+                { label: 'Completed', value: stats.bookings.completed, cls: 'bg-emerald-50 text-emerald-700', icon: CheckCircle2 },
+                { label: 'Cancelled', value: stats.bookings.cancelled, cls: 'bg-red-50 text-red-700', icon: AlertCircle }
+              ].map((s) => {
+                const Icon = s.icon;
+                return (
+                  <div key={s.label} className={`rounded-2xl p-4 ${s.cls}`}>
+                    <Icon size={17} className="mb-2" />
+                    <p className="text-2xl font-extrabold leading-none"><AnimatedCount value={s.value} /></p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide mt-1.5 opacity-80">{s.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-400 mt-4 font-medium">
+              {stats.bookings.thisMonth} booking{stats.bookings.thisMonth === 1 ? '' : 's'} this month
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <UserPlus className="text-indigo-600" size={19} />
+                <h3 className="font-bold text-gray-900">Registrations by status</h3>
+              </div>
+              <Link to="/superadmin/registrations" className="inline-flex items-center gap-1 text-sm font-semibold text-medical-blue hover:text-medical-dark">
+                View all <ArrowRight size={15} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Pending', value: stats.registrations.pending, cls: 'bg-amber-50 text-amber-700', icon: Hourglass },
+                { label: 'Approved', value: stats.registrations.approved, cls: 'bg-emerald-50 text-emerald-700', icon: CheckCircle2 },
+                { label: 'Denied', value: stats.registrations.denied, cls: 'bg-red-50 text-red-700', icon: AlertCircle },
+                { label: 'Demos', value: stats.demos.total, cls: 'bg-indigo-50 text-indigo-700', icon: CalendarDays }
+              ].map((s) => {
+                const Icon = s.icon;
+                return (
+                  <div key={s.label} className={`rounded-2xl p-4 ${s.cls}`}>
+                    <Icon size={17} className="mb-2" />
+                    <p className="text-2xl font-extrabold leading-none"><AnimatedCount value={s.value} /></p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide mt-1.5 opacity-80">{s.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-400 mt-4 font-medium">
+              {stats.registrations.thisMonth} registration{stats.registrations.thisMonth === 1 ? '' : 's'} this month
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Demo Funnel Snapshot */}
       {/* <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
@@ -1135,9 +1345,10 @@ export default function SuperAdminDashboard() {
             <button
               type="button"
               onClick={fetchAdmins}
-              className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-xs transition text-sm"
+              disabled={loadingAdmins}
+              className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-xs transition text-sm disabled:opacity-60"
             >
-              <RefreshCw size={16} /> Refresh
+              {loadingAdmins ? <Loader size="sm" /> : <RefreshCw size={16} />} Refresh
             </button>
             <button 
               onClick={() => {
@@ -1173,6 +1384,7 @@ export default function SuperAdminDashboard() {
           </form>
         )}
 
+        {loadingAdmins ? <TableSkeleton rows={5} cols={4} /> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -1207,9 +1419,10 @@ export default function SuperAdminDashboard() {
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Admins Pagination Controls */}
-        {filteredAdmins.length > itemsPerPage && (
+        {!loadingAdmins && filteredAdmins.length > itemsPerPage && (
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 text-sm">
             <span className="text-gray-500 font-medium">
               Showing <span className="font-bold text-gray-700">{(adminPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-gray-700">{Math.min(adminPage * itemsPerPage, filteredAdmins.length)}</span> of <span className="font-bold text-gray-700">{filteredAdmins.length}</span> admins
@@ -1245,12 +1458,14 @@ export default function SuperAdminDashboard() {
           <button
             type="button"
             onClick={loadAppointments}
-            className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-xs transition text-sm"
+            disabled={loadingAppointments}
+            className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 px-4 py-2 rounded-full font-semibold shadow-xs transition text-sm disabled:opacity-60"
           >
-            <RefreshCw size={16} /> Refresh Appointments
+            {loadingAppointments ? <Loader size="sm" /> : <RefreshCw size={16} />} Refresh Appointments
           </button>
         </div>
 
+        {loadingAppointments ? <TableSkeleton rows={5} cols={6} /> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
@@ -1301,9 +1516,10 @@ export default function SuperAdminDashboard() {
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Appointments Pagination Controls */}
-        {appointments.length > itemsPerPage && (
+        {!loadingAppointments && appointments.length > itemsPerPage && (
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 text-sm">
             <span className="text-gray-500 font-medium">
               Showing <span className="font-bold text-gray-700">{(appointmentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-gray-700">{Math.min(appointmentPage * itemsPerPage, appointments.length)}</span> of <span className="font-bold text-gray-700">{appointments.length}</span> appointments

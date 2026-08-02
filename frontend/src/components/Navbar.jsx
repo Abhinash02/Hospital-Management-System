@@ -353,6 +353,22 @@ import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import medicalLogo from '../assets/sign.png';
+import useSuperAdminBadges from '../hooks/useSuperAdminBadges';
+
+// Small red counter shown at the top-right of a nav item.
+function NavBadge({ count, className = '' }) {
+  if (!count) return null;
+  return (
+    <span
+      title={`${count} new`}
+      className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full
+        bg-red-600 text-white text-[10px] font-black leading-none shadow-sm ring-2 ring-white
+        animate-pulse ${className}`}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -360,6 +376,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Live counters for the superadmin tabs — only polled for superadmins.
+  const { badges } = useSuperAdminBadges(user?.role === 'superadmin');
 
   // Handle scroll shadow effect
   useEffect(() => {
@@ -422,10 +441,13 @@ export default function Navbar() {
     if (user.role === 'superadmin') {
       return [
         { name: 'Overview', to: '/superadmin' },
-        { name: 'Demo Bookings', to: '/superadmin/demos' },
+        { name: 'Demo Bookings', to: '/superadmin/demos', badge: 'demos' },
+        { name: 'Registrations', to: '/superadmin/registrations', badge: 'registrations' },
         { name: 'Manage Admin', to: '/superadmin/manage-admin' },
         { name: 'Manage Hospitals', to: '/superadmin/manage-hospitals' },
-        { name: 'Appointments', to: '/superadmin/appointments' }
+        { name: 'Appointments', to: '/superadmin/appointments' },
+        { name: 'Calendar', to: '/superadmin/calendar' },
+        { name: 'Contacts', to: '/superadmin/contacts', badge: 'contacts' }
       ];
     }
 
@@ -433,6 +455,7 @@ export default function Navbar() {
       return [
         { name: 'Overview', to: '/admin' },
         { name: 'Appointments', to: '/admin/appointments' },
+        { name: 'Calendar', to: '/admin/calendar' },
         { name: 'Timings', to: '/admin/timings' },
         { name: 'Feedback', to: '/admin/appointment-feedback' },
         { name: 'Transcriptions', to: '/admin/transcriptions' }
@@ -527,12 +550,15 @@ export default function Navbar() {
                       key={link.name}
                       to={link.to}
                       className={({ isActive }) =>
-                        `transition-colors whitespace-nowrap py-1 ${
+                        `relative transition-colors whitespace-nowrap py-1 ${
                           isActive ? 'text-medical-blue font-semibold border-b-2 border-medical-blue' : 'hover:text-medical-blue'
                         }`
                       }
                     >
                       {link.name}
+                      {link.badge && (
+                        <NavBadge count={badges[link.badge]} className="absolute -top-2.5 -right-3.5" />
+                      )}
                     </NavLink>
                   ))}
                 </div>
@@ -634,14 +660,15 @@ export default function Navbar() {
                           to={link.to}
                           onClick={() => setIsOpen(false)}
                           className={({ isActive }) =>
-                            `block px-4 py-3 rounded-xl text-base font-medium transition ${
+                            `flex items-center justify-between gap-2 px-4 py-3 rounded-xl text-base font-medium transition ${
                               isActive
                                 ? 'text-medical-blue bg-blue-50/80 font-semibold'
                                 : 'text-gray-700 hover:text-medical-blue hover:bg-gray-50'
                             }`
                           }
                         >
-                          {link.name}
+                          <span>{link.name}</span>
+                          {link.badge && <NavBadge count={badges[link.badge]} />}
                         </NavLink>
                       ))}
 

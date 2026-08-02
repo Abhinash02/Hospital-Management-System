@@ -527,6 +527,7 @@ import {
   Sparkles,
   CheckCircle2
 } from 'lucide-react';
+import { ListSkeleton } from '../../components/Loader';
 
 const APPOINTMENTS_PER_PAGE = 3;
 
@@ -551,6 +552,7 @@ export default function UserBookAppointment() {
   const [user, setUser] = useState(null);
   const [hospitals, setHospitals] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
   const [formData, setFormData] = useState({
     hospitalId: '',
     date: '',
@@ -589,6 +591,7 @@ export default function UserBookAppointment() {
   };
 
   const fetchAppointments = async (token) => {
+    setLoadingAppointments(true);
     try {
       const res = await fetch(`${API_URL}/api/appointments`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -599,6 +602,9 @@ export default function UserBookAppointment() {
       }
     } catch (err) {
       toast.error('Failed to load appointments.');
+    }
+    finally {
+      setLoadingAppointments(false);
     }
   };
 
@@ -881,7 +887,9 @@ export default function UserBookAppointment() {
               </span>
             </div>
 
-            {appointments.length === 0 ? (
+            {loadingAppointments ? (
+              <ListSkeleton rows={3} />
+            ) : appointments.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Calendar size={28} />

@@ -422,6 +422,7 @@ import toast from 'react-hot-toast';
 import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import Pagination from '../../components/Pagination';
+import { TableSkeleton } from '../../components/Loader';
 
 const PER_PAGE = 6;
 const STATUSES = ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled', 'Rescheduled'];
@@ -616,10 +617,7 @@ export default function AdminAppointments() {
           </div>
 
           {loading ? (
-            <div className="py-20 text-center text-slate-500">
-              <Loader2 className="mx-auto mb-3 h-6 w-6 animate-spin text-blue-500" />
-              Loading…
-            </div>
+            <TableSkeleton rows={6} cols={7} />
           ) : (
             <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
               <table className="w-full text-left border-collapse min-w-[1000px]">

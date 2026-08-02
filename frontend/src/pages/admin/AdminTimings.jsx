@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Clock3 } from 'lucide-react';
 import API_URL from '../../config/api';
+import { SectionLoader } from '../../components/Loader';
 
 export default function AdminTimings() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [timingsForm, setTimingsForm] = useState({
     timings: '',
     emergency: ''
@@ -33,6 +35,8 @@ export default function AdminTimings() {
       } catch (error) {
         console.error(error);
         toast.error('Failed to load hospital timings');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -74,6 +78,9 @@ export default function AdminTimings() {
         Update Hospital Timings
       </h3>
 
+      {loading ? (
+        <SectionLoader label="Loading your timings…" sub="Fetching the current schedule" minHeight="min-h-[220px]" />
+      ) : (
       <form onSubmit={handleTimingsUpdate} className="space-y-4 max-w-2xl">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -120,6 +127,7 @@ export default function AdminTimings() {
           Save Timings
         </button>
       </form>
+      )}
     </div>
   );
 }

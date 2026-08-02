@@ -387,6 +387,7 @@ import toast from 'react-hot-toast';
 import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
+import { TableSkeleton } from '../../components/Loader';
 
 const appointmentStatusOptions = ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
 const ITEMS_PER_PAGE = 6;
@@ -608,10 +609,7 @@ export default function SuperAdminAppointments() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-medical-blue border-t-transparent"></div>
-            <p className="mt-2 text-gray-500">Loading appointments...</p>
-          </div>
+          <TableSkeleton rows={6} cols={7} />
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -619,6 +617,7 @@ export default function SuperAdminAppointments() {
                 <thead>
                   <tr className="bg-medical-blue/10 text-medical-dark">
                     <th className="py-3 px-4 font-semibold rounded-tl-lg">Patient</th>
+                    <th className="py-3 px-4 font-semibold">Email</th>
                     <th className="py-3 px-4 font-semibold">Hospital</th>
                     <th className="py-3 px-4 font-semibold">Date</th>
                     <th className="py-3 px-4 font-semibold">Time</th>
@@ -629,7 +628,7 @@ export default function SuperAdminAppointments() {
                 <tbody>
                   {paginatedAppointments.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="py-8 text-center text-gray-500 italic">
+                      <td colSpan="7" className="py-8 text-center text-gray-500 italic">
                         No appointments found.
                       </td>
                     </tr>
@@ -641,9 +640,28 @@ export default function SuperAdminAppointments() {
                       >
                         <td className="py-4 px-4 font-medium text-medical-dark">
                           {appointment.patientName}
+                          {appointment.patientPhone && (
+                            <span className="block text-xs font-normal text-gray-400 mt-0.5">
+                              {appointment.patientPhone}
+                            </span>
+                          )}
                         </td>
                         <td className="py-4 px-4 text-gray-600">
-                          {appointment.hospitalName || appointment.hospitalId || '-'}
+                          {/* Public bookings carry the email inline; dashboard bookings resolve it from the user record. */}
+                          {appointment.email ? (
+                            <a
+                              href={`mailto:${appointment.email}`}
+                              className="text-medical-blue hover:underline break-all text-sm"
+                              title={appointment.email}
+                            >
+                              {appointment.email}
+                            </a>
+                          ) : (
+                            <span className="text-xs italic text-gray-400">Not provided</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 text-gray-600">
+                          {appointment.hospitalName || appointment.hospital || appointment.hospitalId || '-'}
                         </td>
                         <td className="py-4 px-4 text-gray-600">{appointment.date || '-'}</td>
                         <td className="py-4 px-4 text-gray-600">{appointment.time || '-'}</td>

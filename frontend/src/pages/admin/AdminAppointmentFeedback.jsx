@@ -517,6 +517,7 @@ import toast from 'react-hot-toast';
 import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import Pagination from '../../components/Pagination';
+import { TableSkeleton } from '../../components/Loader';
 
 const PER_PAGE = 6;
 const STATUSES = ['Pending', 'Completed'];
@@ -753,10 +754,7 @@ export default function AdminAppointmentFeedback() {
 
           {/* Table Container */}
           {loading ? (
-            <div className="py-24 text-center text-slate-400">
-              <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-blue-600" />
-              <p className="text-sm font-medium animate-pulse">Loading feedback records...</p>
-            </div>
+            <TableSkeleton rows={6} cols={6} />
           ) : (
             <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
               <table className="w-full text-left border-collapse min-w-[950px]">

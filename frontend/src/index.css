@@ -65,4 +65,18 @@
 
   /* Reusable section background used by the funnel/card pages */
   .portal-bg { @apply bg-gradient-to-br from-slate-50 via-blue-50/40 to-slate-50; }
+
+  /* Tabs used by the public appointment page (book / manage) */
+  .portal-tab {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold
+      transition-all cursor-pointer border;
+  }
+  .portal-tab-active   { @apply bg-medical-blue text-white border-medical-blue shadow-md shadow-medical-blue/25; }
+  .portal-tab-inactive { @apply bg-white text-gray-600 border-gray-200 hover:border-medical-blue hover:text-medical-blue; }
+}
+
+/* ── 4. Keyframes ─────────────────────────────────────────── */
+/* Drives the skeleton shimmer in components/Loader.jsx (`animate-[shimmer_…]`). */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
 }

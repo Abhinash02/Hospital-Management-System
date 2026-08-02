@@ -21,6 +21,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
 import Pagination from '../../components/Pagination';
 import SlotSelector from '../../components/SlotSelector';
+import { ListSkeleton } from '../../components/Loader';
 
 const PER_PAGE = 5;
 
@@ -226,10 +227,7 @@ export default function UserMyAppointmentsList() {
 
         {/* Appointments list */}
         {loading ? (
-          <div className="py-16 text-center text-gray-500">
-            <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-medical-blue" />
-            Loading your appointments...
-          </div>
+          <ListSkeleton rows={4} className="py-4" />
         ) : paginated.length === 0 ? (
           <div className="py-16 text-center text-gray-500">
             <Calendar className="mx-auto mb-3 h-12 w-12 text-gray-300" />

@@ -1,78 +1,74 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Check, ShieldCheck, Zap, Crown, ArrowRight, Loader2, Sparkles, Building2, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Check, ShieldCheck, Zap, Crown, ArrowRight, Loader2, Sparkles,
+  Building2, Calendar, Star, Rocket, Gem, AlertCircle, RefreshCw, X
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import API_URL from '../../config/api';
-import PortalCardPage from '../../components/portal/PortalCardPage';
+import { CardSkeleton } from '../../components/Loader';
 
-const PLANS = [
-  {
-    key: 'mini',
-    name: 'Mini Plan',
-    price: '$100',
-    interval: 'monthly',
-    subtitle: 'Great for small clinics starting out',
-    icon: Zap,
-    popular: false,
-    color: 'from-blue-500 to-cyan-500',
-    btnColor: 'bg-blue-600 hover:bg-blue-700 text-white',
-    features: [
-      'Up to 5 Staff Accounts',
-      'Basic Appointment Management',
-      'Patient Records & History',
-      'Email Support'
-    ]
-  },
-  {
-    key: 'basic',
-    name: 'Basic Plan',
-    price: '$200',
-    interval: 'quarterly',
-    subtitle: 'Ideal for growing veterinary hospitals',
-    icon: Sparkles,
-    popular: true,
-    color: 'from-emerald-500 to-teal-600',
-    btnColor: 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/30',
-    features: [
-      'Up to 25 Staff Accounts',
-      'Advanced Calendar & Scheduling',
-      'Billing, Invoicing & Prescriptions',
-      'Google Calendar Integration',
-      '24/7 Priority Support'
-    ]
-  },
-  {
-    key: 'advanced',
-    name: 'Advanced Plan',
-    price: '$500',
-    interval: 'yearly',
-    subtitle: 'For enterprise multi-branch hospitals',
-    icon: Crown,
-    popular: false,
-    color: 'from-purple-600 to-indigo-600',
-    btnColor: 'bg-indigo-600 hover:bg-indigo-700 text-white',
-    features: [
-      'Unlimited Staff & Admin Accounts',
-      'Multi-Branch Hospital Management',
-      'Custom Workflow & Integrations',
-      'Dedicated Account Manager',
-      'Full Analytics & Export Tools'
-    ]
-  }
-];
+// Plans come from the backend (HMS_BACKEND/config/stripePlans.js). The backend sends an
+// icon *key*; this map turns it into the lucide component to render.
+const ICONS = {
+  zap: Zap,
+  sparkles: Sparkles,
+  crown: Crown,
+  star: Star,
+  rocket: Rocket,
+  gem: Gem,
+  building: Building2,
+  calendar: Calendar
+};
 
 export default function PricingPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
   const isRenewal = searchParams.get('renew') === 'true';
+  // Stripe's cancel_url sends people back here with ?payment=cancelled.
+  const paymentCancelled = ['cancelled', 'canceled', 'true'].includes(
+    (searchParams.get('payment') || searchParams.get('canceled') || '').toLowerCase()
+  );
+  const [showCancelNotice, setShowCancelNotice] = useState(paymentCancelled);
+  const [checkoutError, setCheckoutError] = useState('');
 
   const [bookingInfo, setBookingInfo] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState('basic');
+  const [selectedPlan, setSelectedPlan] = useState('');
   const [submitting, setSubmitting] = useState(null);
   const [user, setUser] = useState(null);
+
+  // ─── Plans (from backend config) ────────────────────────────
+  const [plans, setPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [plansError, setPlansError] = useState('');
+
+  const fetchPlans = async () => {
+    setLoadingPlans(true);
+    setPlansError('');
+    try {
+      const res = await fetch(`${API_URL}/api/payments/plans`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Could not load plans');
+
+      const list = Array.isArray(data.plans) ? data.plans : [];
+      setPlans(list);
+      // Preselect the plan flagged "popular", else the first one.
+      const preferred = list.find((p) => p.popular) || list[0];
+      if (preferred) setSelectedPlan((prev) => prev || preferred.key);
+    } catch (err) {
+      console.error('Could not load pricing plans', err);
+      setPlansError(err.message || 'Could not load pricing plans');
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
 
   // ─── Check if user is logged in ─────────────────────────────
   useEffect(() => {
@@ -196,6 +192,8 @@ export default function PricingPage() {
   const handleChoosePlan = async (planKey) => {
   try {
     setSubmitting(planKey);
+    setCheckoutError('');
+    setShowCancelNotice(false);
 
     const authToken = localStorage.getItem('token');
     const headers = {
@@ -231,24 +229,30 @@ export default function PricingPage() {
     const data = await res.json();
 
     if (!res.ok) {
+      // Stripe genuinely switched off — skipping straight to registration is correct.
       if (res.status === 503 || data.message?.includes('Stripe not configured')) {
-        toast.success('Redirecting to registration...');
+        toast.success('Payments are disabled — taking you to registration…');
         navigate(`/register/${token}?plan=${planKey}`);
         return;
       }
+      // Any other failure is a real error: stay put so the user can retry.
+      // Bouncing them to /register here would look like the payment succeeded.
+      setCheckoutError(data.message || 'We could not start the payment. Please try again.');
       toast.error(data.message || 'Could not initiate payment');
       return;
     }
 
     if (data.url) {
       window.location.href = data.url;
-    } else {
-      navigate(`/register/${token}?plan=${planKey}`);
+      return;
     }
+
+    setCheckoutError('Stripe did not return a checkout link. Please try again in a moment.');
+    toast.error('Could not open the payment page');
   } catch (err) {
     console.error('Payment error:', err);
-    toast.error('Network error during payment initiation. Redirecting...');
-    navigate(`/register/${token}?plan=${planKey}`);
+    setCheckoutError('Network error — we could not reach the payment service. Please check your connection and try again.');
+    toast.error('Network error during payment initiation');
   } finally {
     setSubmitting(null);
   }
@@ -258,10 +262,14 @@ export default function PricingPage() {
     const map = {
       monthly: 'per month',
       quarterly: 'per quarter',
-      yearly: 'per year'
+      yearly: 'per year',
+      month: 'per month',
+      year: 'per year'
     };
     return map[interval] || interval;
   };
+
+  const isLoading = loadingInfo || loadingPlans;
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -275,10 +283,17 @@ export default function PricingPage() {
             {isRenewal ? 'Renew Your Subscription' : 'Choose Your Hospital Plan'}
           </h1>
           <p className="mt-3 text-lg text-slate-600 max-w-2xl mx-auto">
-            {isRenewal
-              ? 'Renew your subscription to continue managing your hospital seamlessly.'
-              : `Select the subscription plan that best fits ${bookingInfo?.hospitalName ? <strong className="text-slate-800">{bookingInfo.hospitalName}</strong> : 'your clinic'}. You will be redirected to complete payment and register.`
-            }
+            {isRenewal ? (
+              'Renew your subscription to continue managing your hospital seamlessly.'
+            ) : (
+              <>
+                Select the subscription plan that best fits{' '}
+                {bookingInfo?.hospitalName
+                  ? <strong className="text-slate-800">{bookingInfo.hospitalName}</strong>
+                  : 'your clinic'}
+                . You will be redirected to complete payment and register.
+              </>
+            )}
           </p>
           {isRenewal && user && (
             <div className="mt-2 text-sm text-slate-500">
@@ -287,15 +302,89 @@ export default function PricingPage() {
           )}
         </div>
 
+        {/* Cancelled / failed checkout notice */}
+        <AnimatePresence>
+          {showCancelNotice && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="mb-8 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5"
+            >
+              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-amber-900 text-sm">Checkout was cancelled</p>
+                <p className="text-sm text-amber-800 mt-0.5">
+                  You were not charged and your hospital is not registered yet. Pick a plan below to try again.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCancelNotice(false)}
+                className="p-1 rounded-full text-amber-500 hover:bg-amber-100 transition shrink-0"
+                aria-label="Dismiss"
+              >
+                <X size={17} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Checkout could not be started */}
+        <AnimatePresence>
+          {checkoutError && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="mb-8 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-5"
+            >
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-red-900 text-sm">Payment could not be started</p>
+                <p className="text-sm text-red-800 mt-0.5">{checkoutError}</p>
+                <p className="text-xs text-red-700/80 mt-1.5">You have not been charged.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCheckoutError('')}
+                className="p-1 rounded-full text-red-500 hover:bg-red-100 transition shrink-0"
+                aria-label="Dismiss"
+              >
+                <X size={17} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Plan Cards */}
-        {loadingInfo ? (
-          <div className="py-20 flex justify-center">
-            <Loader2 className="w-10 h-10 animate-spin text-teal-600" />
-          </div>
-        ) : (
+        {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-            {PLANS.map((plan) => {
-              const Icon = plan.icon;
+            {[0, 1, 2].map((i) => <CardSkeleton key={i} lines={5} />)}
+          </div>
+        ) : plansError ? (
+          <div className="py-16 flex flex-col items-center text-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center">
+              <AlertCircle className="w-7 h-7" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800">We couldn’t load the pricing plans</p>
+              <p className="text-sm text-slate-500 mt-1">{plansError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={fetchPlans}
+              className="inline-flex items-center gap-2 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 text-sm transition"
+            >
+              <RefreshCw size={16} /> Try again
+            </button>
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="py-16 text-center text-slate-500">No plans are available right now.</div>
+        ) : (
+          <div className={`grid grid-cols-1 gap-8 items-stretch ${plans.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+            {plans.map((plan) => {
+              const Icon = ICONS[plan.icon] || Sparkles;
               const isSelected = selectedPlan === plan.key;
               const isSubmittingThis = submitting === plan.key;
 

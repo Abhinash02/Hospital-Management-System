@@ -294,6 +294,9 @@ const BookAppointmentPage = lazy(() => import('./pages/portal/BookAppointmentPag
 const SuperAdminDemos = lazy(() => import('./pages/superadmin/SuperAdminDemos'));
 const SuperAdminRegistrations = lazy(() => import('./pages/superadmin/SuperAdminRegistrations'));
 const SuperAdminUsers = lazy(() => import('./pages/superadmin/SuperAdminUsers'));
+const SuperAdminContacts = lazy(() => import('./pages/superadmin/SuperAdminContacts'));
+const SuperAdminCalendar = lazy(() => import('./pages/superadmin/SuperAdminCalendar'));
+const AdminCalendar = lazy(() => import('./pages/admin/AdminCalendar'));
 const Login = lazy(() => import('./pages/Login'));
 const UserDashboard = lazy(() => import('./pages/user/UserDashboard'));
 const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
@@ -310,6 +313,7 @@ const CentreOfExcellence = lazy(() => import('./pages/CentreOfExcellence'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Doctors = lazy(() => import('./pages/Doctors'));
 const Hospitals = lazy(() => import('./pages/Hospitals'));
+const HospitalProfile = lazy(() => import('./pages/HospitalProfile'));
 const PricingPage = lazy(() => import('./pages/stripe/PricingPage'));
 const RenewPage = lazy(() => import('./pages/stripe/RenewPage'));
 
@@ -378,6 +382,7 @@ function App() {
               <Route path="/excellence" element={<CentreOfExcellence />} />
               <Route path="/doctors" element={<Doctors />} />
               <Route path="/hospitals" element={<Hospitals />} />
+              <Route path="/hospitals/:id" element={<HospitalProfile />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
 
@@ -393,11 +398,14 @@ function App() {
               <Route path="/superadmin/demos" element={<SuperAdminDemos />} />
               <Route path="/superadmin/registrations" element={<SuperAdminRegistrations />} />
               <Route path="/superadmin/users" element={<SuperAdminUsers />} />
+              <Route path="/superadmin/contacts" element={<SuperAdminContacts />} />
+              <Route path="/superadmin/calendar" element={<SuperAdminCalendar />} />
 
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminOverview />} />
-                <Route path="appointments" element={<AdminAppointments />} />               
-                <Route path="appointment-feedback" element={<AdminAppointmentFeedback />} /> 
+                <Route path="appointments" element={<AdminAppointments />} />
+                <Route path="calendar" element={<AdminCalendar />} />
+                <Route path="appointment-feedback" element={<AdminAppointmentFeedback />} />
                 <Route path="timings" element={<AdminTimings />} />
                 <Route path="transcriptions" element={<AdminTranscriptions />} />
               </Route>

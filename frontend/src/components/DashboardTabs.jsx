@@ -7,10 +7,13 @@ const ROLE_TABS = {
     { name: 'Users', to: '/superadmin/users' },
     { name: 'Manage Admin', to: '/superadmin/manage-admin' },
     { name: 'Manage Hospitals', to: '/superadmin/manage-hospitals' },
-    { name: 'Appointments', to: '/superadmin/appointments' }
+    { name: 'Appointments', to: '/superadmin/appointments' },
+    { name: 'Calendar', to: '/superadmin/calendar' },
+    { name: 'Contacts', to: '/superadmin/contacts' }
   ],
   admin: [
-    { name: 'Appointments', to: '/admin/appointments' }
+    { name: 'Appointments', to: '/admin/appointments' },
+    { name: 'Calendar', to: '/admin/calendar' }
   ],
   user: [
     { name: 'Book Appointment', to: '/dashboard/book-appointment' },

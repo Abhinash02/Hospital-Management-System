@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, AlertCircle, Plus, Edit3, Trash2, X } from 'lucide-react';
 import API_URL from '../../config/api';
 import Pagination from '../../components/Pagination';
+import { TableSkeleton } from '../../components/Loader';
 
 const emptyForm = { patientName: '', transcript: '' };
 const PER_PAGE = 10;
@@ -14,6 +15,7 @@ export default function AdminTranscriptions() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const paginated = transcriptions.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const authHeaders = () => ({
@@ -22,11 +24,13 @@ export default function AdminTranscriptions() {
   });
 
   const load = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/calls/transcriptions`, { headers: authHeaders() });
       const data = res.ok ? await res.json() : [];
       setTranscriptions(Array.isArray(data) ? data : []);
     } catch { toast.error('Failed to load transcriptions'); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { load(); }, []);
@@ -90,7 +94,9 @@ export default function AdminTranscriptions() {
       </AnimatePresence>
 
       <div className="space-y-4">
-        {transcriptions.length === 0 ? (
+        {loading ? (
+          <TableSkeleton rows={5} cols={4} />
+        ) : transcriptions.length === 0 ? (
           <div className="flex items-center gap-2 text-gray-500">
             <AlertCircle className="w-5 h-5" />
             <p>No transcriptions available.</p>

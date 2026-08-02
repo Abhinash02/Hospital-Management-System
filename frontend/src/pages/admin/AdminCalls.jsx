@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { PhoneCall } from 'lucide-react';
 import API_URL from '../../config/api';
+import { ListSkeleton } from '../../components/Loader';
 
 export default function AdminCalls() {
   const [calls, setCalls] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCalls = async () => {
@@ -18,6 +20,8 @@ export default function AdminCalls() {
       } catch (error) {
         console.error(error);
         toast.error('Failed to load calls');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -32,7 +36,9 @@ export default function AdminCalls() {
       </h3>
 
       <div className="space-y-4">
-        {calls.length === 0 ? (
+        {loading ? (
+          <ListSkeleton rows={3} />
+        ) : calls.length === 0 ? (
           <p className="text-gray-500">No calls logged yet.</p>
         ) : (
           calls.map((call) => (

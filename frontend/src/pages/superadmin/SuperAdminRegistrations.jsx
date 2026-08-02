@@ -10,6 +10,7 @@ import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
 import Pagination from '../../components/Pagination';
+import { TableSkeleton } from '../../components/Loader';
 
 const PER_PAGE = 6;
 
@@ -196,7 +197,7 @@ export default function SuperAdminRegistrations() {
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-gray-500">Loading registrations…</div>
+          <TableSkeleton rows={6} cols={7} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[960px]">

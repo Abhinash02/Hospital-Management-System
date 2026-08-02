@@ -670,6 +670,7 @@ import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import SlotSelector from '../../components/SlotSelector';
 import Pagination from '../../components/Pagination';
+import { ListSkeleton } from '../../components/Loader';
 
 const APPOINTMENTS_PER_PAGE = 3;
 
@@ -677,6 +678,7 @@ export default function UserDashboard() {
   const [user, setUser] = useState(null);
   const [hospitals, setHospitals] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
   const [transcriptions, setTranscriptions] = useState([]);
   const [formData, setFormData] = useState({
     hospitalId: '',
@@ -722,6 +724,7 @@ export default function UserDashboard() {
   };
 
   const fetchAppointments = async (token) => {
+    setLoadingAppointments(true);
     try {
       const res = await fetch(`${API_URL}/api/appointments`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -730,6 +733,9 @@ export default function UserDashboard() {
       setAppointments(data || []);
     } catch {
       toast.error('Failed to load appointments');
+    }
+    finally {
+      setLoadingAppointments(false);
     }
   };
 
@@ -1023,7 +1029,9 @@ export default function UserDashboard() {
             <span className="text-sm text-gray-500">{appointments.length} total</span>
           </div>
 
-          {appointments.length === 0 ? (
+          {loadingAppointments ? (
+            <ListSkeleton rows={3} />
+          ) : appointments.length === 0 ? (
             <p className="text-gray-500 italic text-center py-10">No appointments booked yet.</p>
           ) : (
             <>

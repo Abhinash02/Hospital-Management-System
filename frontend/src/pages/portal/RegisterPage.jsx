@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Building2, User, Mail, Phone, MapPin, Home, BedDouble, Lock, ShieldCheck,
-  Loader2, CheckCircle2, AlertCircle, Check, X, Eye, EyeOff
+  Loader2, CheckCircle2, AlertCircle, Check, X, Eye, EyeOff, CreditCard, RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API_URL from '../../config/api';
@@ -31,6 +31,10 @@ export default function RegisterPage() {
   const [verifying, setVerifying] = useState(true);
   const [paymentOk, setPaymentOk] = useState(false);
   const [stripeConfigured, setStripeConfigured] = useState(false);
+  // Why verification failed, so we can show the right recovery path:
+  // 'no-session' | 'unpaid' | 'error'
+  const [failReason, setFailReason] = useState('');
+  const [retrying, setRetrying] = useState(false);
   const [form, setForm] = useState(initial);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -38,21 +42,54 @@ export default function RegisterPage() {
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const verifyPayment = async () => {
+    setFailReason('');
+    try {
+      const res = await fetch(`${API_URL}/api/payments/verify?session_id=${sessionId || ''}`);
+      const data = await res.json();
+
+      // Stripe switched off (dev / self-hosted) → let registration through.
+      if (!data.configured) {
+        setStripeConfigured(false);
+        setPaymentOk(true);
+        return;
+      }
+
+      setStripeConfigured(true);
+
+      if (!res.ok) {
+        // 400 with no session_id means they opened this page directly.
+        setPaymentOk(false);
+        setFailReason(sessionId ? 'error' : 'no-session');
+        return;
+      }
+
+      setPaymentOk(!!data.paid);
+      if (!data.paid) setFailReason('unpaid');
+      if (data.email) setForm((f) => ({ ...f, email: data.email }));
+    } catch {
+      setPaymentOk(false);
+      setStripeConfigured(true);
+      setFailReason('error');
+    }
+  };
+
   useEffect(() => {
     (async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/payments/verify?session_id=${sessionId || ''}`);
-        const data = await res.json();
-        setStripeConfigured(!!data.configured);
-        setPaymentOk(!data.configured || !!data.paid); // dev: no stripe → allow
-        if (data.email) setForm((f) => ({ ...f, email: data.email }));
-      } catch {
-        setPaymentOk(false);
-      } finally {
-        setVerifying(false);
-      }
+      await verifyPayment();
+      setVerifying(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
+
+  // Stripe's webhook can land a beat after the redirect, so let people re-check
+  // rather than assuming the payment failed.
+  const retryVerify = async () => {
+    setRetrying(true);
+    await verifyPayment();
+    setRetrying(false);
+    // `paymentOk` updates asynchronously; read the freshest value on next render.
+  };
 
   // Prefill with the data we already captured at demo time (hospital, contact, email, phone, city).
   useEffect(() => {
@@ -118,15 +155,54 @@ export default function RegisterPage() {
 
   if (verifying) return <PortalCardPage><div className="py-16 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-medical-blue" /></div></PortalCardPage>;
 
-  if (stripeConfigured && !paymentOk) return (
-    <PortalCardPage>
-      <div className="text-center py-8">
-        <AlertCircle className="w-14 h-14 text-amber-400 mx-auto mb-4" />
-        <h1 className="text-xl font-bold text-medical-dark">Payment not verified</h1>
-        <p className="text-gray-500 mt-2">We couldn't confirm your payment. If you were charged, please contact support.</p>
-      </div>
-    </PortalCardPage>
-  );
+  if (stripeConfigured && !paymentOk) {
+    const COPY = {
+      'no-session': {
+        title: 'Payment step not completed',
+        body: 'This page is reached after checkout. Pick a plan and complete payment to unlock registration.'
+      },
+      unpaid: {
+        title: 'Payment not completed',
+        body: 'Stripe reports this checkout as unpaid — it was cancelled or the card was declined. Nothing has been charged.'
+      },
+      error: {
+        title: 'We couldn’t verify your payment',
+        body: 'Something went wrong while checking with Stripe. If you were charged, do not pay again — re-check below or contact support.'
+      }
+    };
+    const copy = COPY[failReason] || COPY.error;
+
+    return (
+      <PortalCardPage>
+        <div className="text-center py-8">
+          <AlertCircle className="w-14 h-14 text-amber-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-medical-dark">{copy.title}</h1>
+          <p className="text-gray-500 mt-2 max-w-md mx-auto">{copy.body}</p>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <Link to={`/pricing${token ? `?token=${token}` : ''}`} className="btn btn-primary btn-md">
+              <CreditCard className="w-4 h-4" /> {failReason === 'no-session' ? 'Choose a plan' : 'Try payment again'}
+            </Link>
+            {failReason !== 'no-session' && (
+              <button type="button" onClick={retryVerify} disabled={retrying} className="btn btn-outline btn-md">
+                {retrying
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Re-checking…</>
+                  : <><RefreshCw className="w-4 h-4" /> Re-check payment</>}
+              </button>
+            )}
+          </div>
+
+          <p className="text-xs text-gray-400 mt-6">
+            Charged but still stuck? Email{' '}
+            <a href="mailto:contact@medpark.com" className="text-medical-blue font-semibold hover:underline">
+              contact@medpark.com
+            </a>
+            {sessionId && <> quoting reference <span className="font-mono">{sessionId.slice(-12)}</span></>}.
+          </p>
+        </div>
+      </PortalCardPage>
+    );
+  }
 
   if (done) return (
     <PortalCardPage>

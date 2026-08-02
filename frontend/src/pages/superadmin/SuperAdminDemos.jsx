@@ -439,6 +439,7 @@ import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
 import Pagination from '../../components/Pagination';
+import { SectionLoader } from '../../components/Loader';
 
 const PER_PAGE = 6;
 
@@ -780,12 +781,7 @@ export default function SuperAdminDemos() {
 
           {/* Table View */}
           {loading ? (
-            <div className="py-24 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 animate-spin">
-                <RefreshCw size={20} />
-              </div>
-              <p className="font-semibold text-sm">Syncing booking data…</p>
-            </div>
+            <SectionLoader label="Syncing booking data…" sub="Fetching the latest demo bookings" minHeight="min-h-[380px]" />
           ) : (
             <div className="overflow-x-auto rounded-3xl border border-slate-200/70 shadow-sm relative z-10 min-h-[380px]">
               <table className="w-full text-left border-collapse min-w-[1250px]">

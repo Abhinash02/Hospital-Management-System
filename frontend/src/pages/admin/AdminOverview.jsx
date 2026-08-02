@@ -25,6 +25,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { StatSkeleton, SectionLoader } from '../../components/Loader';
 
 ChartJS.register(
   CategoryScale,
@@ -274,8 +275,11 @@ export default function AdminOverview() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-10 shadow text-center text-gray-500">
-        Loading dashboard...
+      <div className="space-y-8">
+        <StatSkeleton count={4} />
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <SectionLoader label="Loading dashboard…" sub="Pulling your hospital’s latest activity" />
+        </div>
       </div>
     );
   }

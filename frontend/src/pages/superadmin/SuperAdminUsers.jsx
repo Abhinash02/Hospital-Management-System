@@ -294,6 +294,7 @@ import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
 import Pagination from '../../components/Pagination';
+import { TableSkeleton } from '../../components/Loader';
 
 const PER_PAGE = 6;
 
@@ -568,7 +569,7 @@ export default function SuperAdminUsers() {
         </AnimatePresence>
 
         {loading ? (
-          <div className="py-16 text-center text-gray-500">Loading users…</div>
+          <TableSkeleton rows={6} cols={5} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[860px]">

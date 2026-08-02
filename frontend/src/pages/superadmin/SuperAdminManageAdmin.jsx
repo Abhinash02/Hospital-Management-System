@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import API_URL from '../../config/api';
 import DashboardLayout from '../../components/DashboardLayout';
 import DashboardTabs from '../../components/DashboardTabs';
+import { TableSkeleton } from '../../components/Loader';
 
 export default function SuperAdminManageAdmin() {
   const [user, setUser] = useState(null);
@@ -15,7 +16,7 @@ export default function SuperAdminManageAdmin() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', hospital: '' });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -232,6 +233,7 @@ export default function SuperAdminManageAdmin() {
           </form>
         )}
 
+        {isLoading ? <TableSkeleton rows={5} cols={4} /> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -272,6 +274,7 @@ export default function SuperAdminManageAdmin() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </DashboardLayout>
   );
